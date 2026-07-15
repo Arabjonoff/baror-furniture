@@ -1,0 +1,49 @@
+{% extends "dashboard/base.html" %}
+{% load catalog_extras %}
+
+{% block title %}Buyurtmalar{% endblock %}
+{% block heading %}Buyurtmalar{% endblock %}
+{% block subheading %}Buyurtmalarni boshqarish va holatini yangilash{% endblock %}
+
+{% block content %}
+
+<form method="get" class="db-toolbar">
+    <div class="db-search">
+        <input type="text" name="q" value="{{ query }}" placeholder="ID, ism yoki telefon bo'yicha qidirish...">
+    </div>
+    <button type="submit" class="db-btn db-btn-primary">Qidirish</button>
+</form>
+
+<div class="db-tabs" style="margin-bottom:18px;">
+    <a href="{% url 'dashboard:orders' %}" class="db-tab {% if not selected_status %}active{% endif %}">Barchasi</a>
+    {% for code, label in status_choices %}
+        <a href="?status={{ code }}" class="db-tab {% if selected_status == code %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+<div class="db-panel">
+    <div class="db-table-wrap">
+        <table class="db-table">
+            <thead>
+                <tr><th>#</th><th>Mijoz</th><th>Telefon</th><th>Sana</th><th>Summa</th><th>To'lov</th><th>Holat</th></tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr onclick="location.href='{% url 'dashboard:order_detail' order_id=order.id %}'" style="cursor:pointer;">
+                        <td class="db-cell-strong">#{{ order.id }}</td>
+                        <td>{{ order.full_name }}</td>
+                        <td class="db-cell-muted">{{ order.phone }}</td>
+                        <td class="db-cell-muted">{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                        <td class="db-cell-strong">{{ order.total_price|money }} so'm</td>
+                        <td><span class="db-badge pay-{{ order.payment_status }}">{{ order.get_payment_status_display }}</span></td>
+                        <td><span class="db-badge st-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7"><div class="db-empty"><div class="db-empty-icon">🧾</div><p>Buyurtma topilmadi</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

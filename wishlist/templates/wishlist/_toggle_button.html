@@ -1,0 +1,15 @@
+{% comment %}
+Sevimlilar yurakcha tugmasi. Ishlatish:
+  {% include "wishlist/_toggle_button.html" with product=product %}
+  {% include "wishlist/_toggle_button.html" with product=product extra_class="wishlist-btn-detail" %}
+{% endcomment %}
+<form action="{% url 'wishlist:toggle' product_id=product.id %}" method="post" class="wishlist-form ajax-wishlist-form">
+    {% csrf_token %}
+    <button type="submit"
+            class="wishlist-btn {{ extra_class }} {% if product.id in wishlist_product_ids %}is-active{% endif %}"
+            aria-label="{% if product.id in wishlist_product_ids %}Sevimlilardan o'chirish{% else %}Sevimlilarga qo'shish{% endif %}"
+            aria-pressed="{% if product.id in wishlist_product_ids %}true{% else %}false{% endif %}"
+            title="Sevimlilar">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><use href="#icon-heart"></use></svg>
+    </button>
+</form>

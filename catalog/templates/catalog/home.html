@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Barormebel — mebel do'koni{% endblock %}
+
+{% block content %}
+{% if banners %}
+<section class="hero-slider" id="heroSlider">
+    <div class="hero-slides">
+        {% for banner in banners %}
+            <div class="hero-slide {% if banner.image %}has-image{% else %}hero-slide-{% cycle '1' '2' '3' %}{% endif %} {% if banner.title or banner.button_text %}has-content{% endif %} {% if forloop.first %}is-active{% endif %}"
+                 {% if banner.image %}style="background-image:url('{{ banner.image.url }}');"{% endif %}>
+                {% if banner.title or banner.button_text or banner.eyebrow %}
+                <div class="hero-slide-content">
+                    {% if banner.eyebrow %}<span class="hero-eyebrow">{{ banner.eyebrow }}</span>{% endif %}
+                    {% if banner.title %}<h1>{{ banner.title }}</h1>{% endif %}
+                    {% if banner.description %}<p>{{ banner.description }}</p>{% endif %}
+                    {% if banner.button_text %}
+                        <a href="{{ banner.button_link|default:'#' }}" class="btn btn-primary">{{ banner.button_text }}</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if banners|length > 1 %}
+        <button class="hero-arrow hero-arrow-prev" id="heroPrev" aria-label="Oldingi slayd">&#10094;</button>
+        <button class="hero-arrow hero-arrow-next" id="heroNext" aria-label="Keyingi slayd">&#10095;</button>
+
+        <div class="hero-dots" id="heroDots">
+            {% for banner in banners %}
+                <button class="hero-dot {% if forloop.first %}is-active{% endif %}" data-slide="{{ forloop.counter0 }}" aria-label="{{ forloop.counter }}-slayd"></button>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+{% endif %}
+
+<section class="section">
+    <h2 class="section-title">Kategoriyalar</h2>
+    <div class="category-grid">
+        {% for category in categories %}
+            <a href="{% url 'catalog:product_list_by_category' category_slug=category.slug %}" class="category-card">
+                {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                {% else %}
+                    <div class="category-card-noimage"></div>
+                {% endif %}
+                <span>{{ category.name }}</span>
+            </a>
+        {% empty %}
+            <p>Hozircha kategoriyalar qo'shilmagan.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <h2 class="section-title">Tanlangan mahsulotlar</h2>
+    <div class="product-grid">
+        {% for product in featured_products %}
+            {% include "catalog/_product_card.html" %}
+        {% empty %}
+            <p>Hozircha tanlangan mahsulotlar yo'q.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

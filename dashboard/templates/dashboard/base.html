@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Boshqaruv paneli{% endblock %} — Barormebel</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="db-body">
+<div class="db-shell">
+
+    <aside class="db-sidebar" id="dbSidebar">
+        <div class="db-brand">
+            <span class="db-brand-badge">B</span>
+            Barormebel
+        </div>
+        <nav class="db-nav">
+            <span class="db-nav-label">Asosiy</span>
+            <a href="{% url 'dashboard:index' %}" class="db-nav-item {% if active == 'index' %}active{% endif %}">
+                <span class="ico">📊</span> Statistika
+            </a>
+            <a href="{% url 'dashboard:orders' %}" class="db-nav-item {% if active == 'orders' %}active{% endif %}">
+                <span class="ico">🧾</span> Buyurtmalar
+                {% if new_orders_count %}<span class="badge">{{ new_orders_count }}</span>{% endif %}
+            </a>
+            <a href="{% url 'dashboard:products' %}" class="db-nav-item {% if active == 'products' %}active{% endif %}">
+                <span class="ico">🛋️</span> Mahsulotlar
+            </a>
+            <a href="{% url 'dashboard:customers' %}" class="db-nav-item {% if active == 'customers' %}active{% endif %}">
+                <span class="ico">👥</span> Mijozlar
+            </a>
+
+            <span class="db-nav-label">Boshqa</span>
+            <a href="/admin/" class="db-nav-item"><span class="ico">⚙️</span> Django admin</a>
+            <a href="{% url 'catalog:home' %}" class="db-nav-item"><span class="ico">🌐</span> Saytga o'tish</a>
+        </nav>
+        <div class="db-sidebar-foot">
+            <a href="{% url 'accounts:logout' %}" class="db-nav-item"><span class="ico">↩</span> Chiqish</a>
+        </div>
+    </aside>
+
+    <div class="db-main">
+        <header class="db-topbar">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="db-hamburger" id="dbHamburger" aria-label="Menyu">☰</button>
+                <div>
+                    <h1>{% block heading %}Boshqaruv paneli{% endblock %}</h1>
+                    <p class="db-topbar-sub">{% block subheading %}{% endblock %}</p>
+                </div>
+            </div>
+            <div class="db-topbar-user">
+                <div class="db-topbar-avatar">
+                    {% if request.user.avatar %}<img src="{{ request.user.avatar.url }}" alt="">{% else %}{{ request.user.initial }}{% endif %}
+                </div>
+                <div>
+                    <div style="font-weight:600;">{{ request.user.get_short_name }}</div>
+                    <div class="db-cell-muted">Administrator</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="db-content">
+            {% if messages %}
+                <div class="db-messages">
+                    {% for message in messages %}
+                        <div class="db-message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<script>
+    var h = document.getElementById('dbHamburger'), s = document.getElementById('dbSidebar');
+    if (h && s) { h.addEventListener('click', function () { s.classList.toggle('open'); }); }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load catalog_extras %}
+
+{% block title %}Buyurtma #{{ order.id }} — Barormebel{% endblock %}
+
+{% block content %}
+<div class="order-confirmation">
+    <h1>Buyurtmangiz qabul qilindi!</h1>
+    <p class="order-number">Buyurtma raqami: <strong>#{{ order.id }}</strong></p>
+
+    <div class="order-info-grid">
+        <div>
+            <h3>Yetkazib berish ma'lumotlari</h3>
+            <p>{{ order.full_name }}</p>
+            <p>{{ order.phone }}</p>
+            <p>{{ order.region }}, {{ order.district }}</p>
+            <p>{{ order.address }}</p>
+            <p>Turi: {{ order.get_delivery_type_display }}</p>
+            {% if order.comment %}<p>Izoh: {{ order.comment }}</p>{% endif %}
+        </div>
+        <div>
+            <h3>Holat</h3>
+            <p>Buyurtma holati: <span class="order-status">{{ order.get_status_display }}</span></p>
+            <p>To'lov: {{ order.get_payment_method_display }} — {{ order.get_payment_status_display }}</p>
+            <p>Sana: {{ order.created_at|date:"d.m.Y H:i" }}</p>
+        </div>
+    </div>
+
+    <h3>Mahsulotlar</h3>
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Mahsulot</th>
+                <th>Rang</th>
+                <th>Narx</th>
+                <th>Miqdor</th>
+                <th>Jami</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.color|default:"—" }}</td>
+                    <td>{{ item.price|money }} so'm</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.get_cost|money }} so'm</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="cart-summary">
+        <p class="cart-total">Jami: <strong>{{ order.total_price|money }} so'm</strong></p>
+        <a href="{% url 'catalog:product_list' %}" class="btn btn-primary">Xaridni davom ettirish</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load catalog_extras %}
+
+{% block title %}Savat — Barormebel{% endblock %}
+
+{% block content %}
+<h1>Savat</h1>
+
+{% if cart|length > 0 %}
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Mahsulot</th>
+                <th>Rang</th>
+                <th>Narx</th>
+                <th>Miqdor</th>
+                <th>Jami</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart %}
+                <tr>
+                    <td class="cart-product-cell">
+                        <a href="{% url 'catalog:product_detail' slug=item.product.slug %}">
+                            {% with main_image=item.product.images.first %}
+                                {% if main_image %}
+                                    <img src="{{ main_image.image.url }}" alt="{{ item.product.name }}">
+                                {% endif %}
+                            {% endwith %}
+                            <span>{{ item.product.name }}</span>
+                        </a>
+                    </td>
+                    <td>{{ item.color|default:"—" }}</td>
+                    <td>{{ item.price|money }} so'm</td>
+                    <td>
+                        <form action="{% url 'cart:update' product_id=item.product.id %}" method="post" class="cart-quantity-form">
+                            {% csrf_token %}
+                            {% if item.color %}<input type="hidden" name="color" value="{{ item.color }}">{% endif %}
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}">
+                            <button type="submit" class="btn-small">Yangilash</button>
+                        </form>
+                    </td>
+                    <td>{{ item.total_price|money }} so'm</td>
+                    <td>
+                        <form action="{% url 'cart:remove' product_id=item.product.id %}" method="post">
+                            {% csrf_token %}
+                            {% if item.color %}<input type="hidden" name="color" value="{{ item.color }}">{% endif %}
+                            <button type="submit" class="btn-remove">O'chirish</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="cart-summary">
+        <p class="cart-total">Jami: <strong>{{ cart.get_total_price|money }} so'm</strong></p>
+        <a href="{% url 'orders:checkout' %}" class="btn btn-primary cart-checkout">Buyurtma berish</a>
+    </div>
+{% else %}
+    <div class="empty-state">
+        <svg class="empty-state-icon" viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <p class="empty-state-title">Savatingiz hozircha bo'sh</p>
+        <p class="empty-state-text">Katalogdan yoqtirgan mebellaringizni tanlab, savatga qo'shing.</p>
+        <a href="{% url 'catalog:product_list' %}" class="btn btn-primary">Xarid qilishni boshlash</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "dashboard/base.html" %}
+{% load catalog_extras %}
+
+{% block title %}Statistika{% endblock %}
+{% block heading %}Statistika{% endblock %}
+{% block subheading %}Do'kon faoliyatining umumiy ko'rinishi{% endblock %}
+
+{% block content %}
+
+<!-- Asosiy raqamlar -->
+<div class="db-stats">
+    <div class="db-stat">
+        <div class="db-stat-icon ic-green">💰</div>
+        <div>
+            <p class="db-stat-label">Umumiy daromad</p>
+            <p class="db-stat-value">{{ stats.revenue|money }} <span style="font-size:0.9rem;">so'm</span></p>
+            <p class="db-stat-meta up">Bekor qilinganlar hisobga olinmagan</p>
+        </div>
+    </div>
+    <div class="db-stat">
+        <div class="db-stat-icon ic-blue">🧾</div>
+        <div>
+            <p class="db-stat-label">Buyurtmalar</p>
+            <p class="db-stat-value">{{ stats.orders_total }}</p>
+            <p class="db-stat-meta up">{{ stats.orders_new }} ta yangi</p>
+        </div>
+    </div>
+    <div class="db-stat">
+        <div class="db-stat-icon ic-brown">🛋️</div>
+        <div>
+            <p class="db-stat-label">Mahsulotlar</p>
+            <p class="db-stat-value">{{ stats.products_total }}</p>
+            {% if stats.low_stock %}<p class="db-stat-meta warn">{{ stats.low_stock }} ta kam qoldiqda</p>{% else %}<p class="db-stat-meta up">Qoldiqlar yetarli</p>{% endif %}
+        </div>
+    </div>
+    <div class="db-stat">
+        <div class="db-stat-icon ic-amber">👥</div>
+        <div>
+            <p class="db-stat-label">Mijozlar</p>
+            <p class="db-stat-value">{{ stats.customers }}</p>
+            <p class="db-stat-meta">Ro'yxatdan o'tganlar</p>
+        </div>
+    </div>
+</div>
+
+<div class="db-grid db-grid-2">
+    <!-- Daromad grafigi -->
+    <div class="db-panel">
+        <div class="db-panel-head">
+            <h2>Oxirgi 7 kunlik daromad</h2>
+        </div>
+        <div class="db-panel-body">
+            <div class="db-chart">
+                {% for c in chart %}
+                    <div class="db-chart-col">
+                        <div class="db-chart-bar-wrap">
+                            <div class="db-chart-bar" style="height: {{ c.percent }}%;" title="{{ c.total|money }} so'm">
+                                {% if c.total %}<span class="val">{{ c.total|money }}</span>{% endif %}
+                            </div>
+                        </div>
+                        <span class="db-chart-label">{{ c.label }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Holat bo'yicha taqsimot -->
+    <div class="db-panel">
+        <div class="db-panel-head">
+            <h2>Buyurtmalar holati</h2>
+        </div>
+        <div class="db-panel-body">
+            <div class="db-status-list">
+                {% for s in status_breakdown %}
+                    <div class="db-status-row">
+                        <span class="name">{{ s.label }}</span>
+                        <span class="track">
+                            <span class="fill st-{{ s.code }}" style="width: {% if stats.orders_total %}{% widthratio s.count stats.orders_total 100 %}{% else %}0{% endif %}%; background: currentColor;"></span>
+                        </span>
+                        <span class="num">{{ s.count }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="db-grid db-grid-2">
+    <!-- Oxirgi buyurtmalar -->
+    <div class="db-panel">
+        <div class="db-panel-head">
+            <h2>Oxirgi buyurtmalar</h2>
+            <a href="{% url 'dashboard:orders' %}" class="db-btn db-btn-sm db-btn-ghost">Barchasi →</a>
+        </div>
+        <div class="db-table-wrap">
+            <table class="db-table">
+                <thead>
+                    <tr><th>#</th><th>Mijoz</th><th>Summa</th><th>Holat</th></tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                        <tr onclick="location.href='{% url 'dashboard:order_detail' order_id=order.id %}'" style="cursor:pointer;">
+                            <td class="db-cell-strong">#{{ order.id }}</td>
+                            <td>{{ order.full_name }}<div class="db-cell-muted">{{ order.created_at|date:"d.m.Y H:i" }}</div></td>
+                            <td class="db-cell-strong">{{ order.total_price|money }}</td>
+                            <td><span class="db-badge st-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="4" class="db-empty">Hozircha buyurtma yo'q</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Kam qolgan mahsulotlar -->
+    <div class="db-panel">
+        <div class="db-panel-head">
+            <h2>Kam qoldiqdagi mahsulotlar</h2>
+        </div>
+        <div class="db-table-wrap">
+            <table class="db-table">
+                <thead><tr><th>Mahsulot</th><th>Qoldiq</th></tr></thead>
+                <tbody>
+                    {% for p in low_stock_products %}
+                        <tr>
+                            <td><div class="prod-cell">
+                                {% with img=p.images.first %}<img class="prod-thumb" src="{% if img %}{{ img.image.url }}{% endif %}" alt="">{% endwith %}
+                                <div><div class="db-cell-strong">{{ p.name|truncatechars:28 }}</div><div class="db-cell-muted">{{ p.category.name }}</div></div>
+                            </div></td>
+                            <td><span class="db-badge db-badge-stock-low">{{ p.stock }} dona</span></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="db-empty">Barcha mahsulotlar yetarli qoldiqda ✓</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if top_products %}
+<div class="db-panel">
+    <div class="db-panel-head"><h2>Eng ko'p sotilgan mahsulotlar</h2></div>
+    <div class="db-table-wrap">
+        <table class="db-table">
+            <thead><tr><th>Mahsulot</th><th>Kategoriya</th><th>Narx</th><th>Sotilgan</th></tr></thead>
+            <tbody>
+                {% for p in top_products %}
+                    <tr>
+                        <td><div class="prod-cell">
+                            {% with img=p.images.first %}<img class="prod-thumb" src="{% if img %}{{ img.image.url }}{% endif %}" alt="">{% endwith %}
+                            <span class="db-cell-strong">{{ p.name }}</span>
+                        </div></td>
+                        <td class="db-cell-muted">{{ p.category.name }}</td>
+                        <td class="db-cell-strong">{{ p.price|money }} so'm</td>
+                        <td><span class="db-badge db-badge-stock-ok">{{ p.sold }} dona</span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

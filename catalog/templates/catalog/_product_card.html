@@ -1,0 +1,37 @@
+{% load static catalog_extras %}
+<article class="product-card">
+    {% include "wishlist/_toggle_button.html" with product=product extra_class="wishlist-btn-overlay" %}
+    <a href="{% url 'catalog:product_detail' slug=product.slug %}" class="product-card-image">
+        {% with main_image=product.images.first %}
+            {% if main_image %}
+                <img src="{{ main_image.image.url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+                <div class="product-card-noimage">Rasm yo'q</div>
+            {% endif %}
+        {% endwith %}
+        {% if product.get_discount_percent %}
+            <span class="badge badge-discount">-{{ product.get_discount_percent }}%</span>
+        {% endif %}
+        {% if not product.in_stock %}
+            <span class="badge badge-outofstock">Tugagan</span>
+        {% endif %}
+    </a>
+    <div class="product-card-body">
+        <h3 class="product-card-title">
+            <a href="{% url 'catalog:product_detail' slug=product.slug %}">{{ product.name }}</a>
+        </h3>
+        <div class="product-card-price">
+            {% if product.old_price %}
+                <span class="price-old">{{ product.old_price|money }} so'm</span>
+            {% endif %}
+            <span class="price-current">{{ product.price|money }} so'm</span>
+        </div>
+        <form action="{% url 'cart:add' product_id=product.id %}" method="post" class="product-card-form ajax-add-to-cart-form">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn btn-primary" {% if not product.in_stock %}disabled{% endif %}>
+                Savatga qo'shish
+            </button>
+        </form>
+    </div>
+</article>

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load catalog_extras %}
+
+{% block title %}Buyurtmalarim — Barormebel{% endblock %}
+
+{% block content %}
+<h1>Buyurtmalarim</h1>
+
+{% if orders %}
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Raqami</th>
+                <th>Sana</th>
+                <th>Holat</th>
+                <th>Jami</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>{{ order.get_status_display }}</td>
+                    <td>{{ order.total_price|money }} so'm</td>
+                    <td><a href="{% url 'orders:detail' order_id=order.id %}">Batafsil</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="empty-state">
+        <svg class="empty-state-icon" viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 2h6l1 4H8l1-4z"></path>
+            <path d="M4 6h16l-1.5 14a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2L4 6z"></path>
+        </svg>
+        <p class="empty-state-title">Hozircha buyurtmalaringiz yo'q</p>
+        <p class="empty-state-text">Birinchi buyurtmangizni berish uchun katalogga o'ting.</p>
+        <a href="{% url 'catalog:product_list' %}" class="btn btn-primary">Xarid qilishni boshlash</a>
+    </div>
+{% endif %}
+{% endblock %}

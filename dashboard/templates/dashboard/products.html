@@ -1,0 +1,62 @@
+{% extends "dashboard/base.html" %}
+{% load catalog_extras %}
+
+{% block title %}Mahsulotlar{% endblock %}
+{% block heading %}Mahsulotlar{% endblock %}
+{% block subheading %}Katalogni boshqarish{% endblock %}
+
+{% block content %}
+
+<div class="db-toolbar">
+    <form method="get" class="db-search" style="display:flex;gap:10px;flex:1;">
+        <input type="text" name="q" value="{{ query }}" placeholder="Mahsulot nomi bo'yicha qidirish...">
+        <select name="category" class="db-select" onchange="this.form.submit()">
+            <option value="">Barcha kategoriyalar</option>
+            {% for cat in categories %}
+                <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    <a href="{% url 'dashboard:product_create' %}" class="db-btn db-btn-primary">+ Yangi mahsulot</a>
+</div>
+
+<div class="db-panel">
+    <div class="db-table-wrap">
+        <table class="db-table">
+            <thead>
+                <tr><th>Mahsulot</th><th>Kategoriya</th><th>Narx</th><th>Qoldiq</th><th>Holat</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td><div class="prod-cell">
+                            {% with img=product.images.first %}<img class="prod-thumb" src="{% if img %}{{ img.image.url }}{% endif %}" alt="">{% endwith %}
+                            <div><div class="db-cell-strong">{{ product.name|truncatechars:34 }}</div>{% if product.is_featured %}<div class="db-cell-muted">⭐ Bosh sahifada</div>{% endif %}</div>
+                        </div></td>
+                        <td class="db-cell-muted">{{ product.category.name }}</td>
+                        <td class="db-cell-strong">{{ product.price|money }} so'm</td>
+                        <td>
+                            {% if product.stock <= low_stock_threshold %}
+                                <span class="db-badge db-badge-stock-low">{{ product.stock }} dona</span>
+                            {% else %}
+                                <span class="db-badge db-badge-stock-ok">{{ product.stock }} dona</span>
+                            {% endif %}
+                        </td>
+                        <td>{% if product.is_available %}<span class="db-badge st-yetkazildi">Sotuvda</span>{% else %}<span class="db-badge st-bekor_qilingan">Yashirin</span>{% endif %}</td>
+                        <td style="text-align:right;white-space:nowrap;">
+                            <a href="{% url 'dashboard:product_edit' product_id=product.id %}" class="db-btn db-btn-sm">Tahrir</a>
+                            <form action="{% url 'dashboard:product_delete' product_id=product.id %}" method="post" style="display:inline;" onsubmit="return confirm('“{{ product.name|escapejs }}” o‘chirilsinmi?');">
+                                {% csrf_token %}
+                                <button type="submit" class="db-btn db-btn-sm db-btn-danger">O'chir</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6"><div class="db-empty"><div class="db-empty-icon">🛋️</div><p>Mahsulot topilmadi</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

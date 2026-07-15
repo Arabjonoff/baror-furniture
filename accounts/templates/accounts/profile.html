@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Profil — Barormebel{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+
+    <!-- Profil sarlavhasi: avatar, ism, statistika -->
+    <section class="profile-hero">
+        <div class="profile-hero-main">
+            <div class="profile-avatar">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="{{ user.get_short_name }}">
+                {% else %}
+                    <span class="profile-avatar-initial">{{ user.initial }}</span>
+                {% endif %}
+            </div>
+            <div class="profile-hero-info">
+                <h1>{{ user.full_name|default:"Foydalanuvchi" }}</h1>
+                <p class="profile-hero-phone">{{ user.phone_number }}</p>
+                <p class="profile-hero-since">A'zo bo'lgan: {{ user.date_joined|date:"d.m.Y" }}</p>
+            </div>
+        </div>
+        <div class="profile-stats">
+            <a href="{% url 'orders:list' %}" class="profile-stat">
+                <span class="profile-stat-num">{{ orders_count }}</span>
+                <span class="profile-stat-label">Buyurtma</span>
+            </a>
+            <div class="profile-stat">
+                <span class="profile-stat-num">{{ addresses_count }}</span>
+                <span class="profile-stat-label">Manzil</span>
+            </div>
+            <a href="{% url 'wishlist:detail' %}" class="profile-stat">
+                <span class="profile-stat-num">{{ wishlist|length }}</span>
+                <span class="profile-stat-label">Sevimli</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Sodiqlik dasturi: bonus ballar -->
+    <section class="bonus-card">
+        <div class="bonus-card-left">
+            <span class="bonus-card-icon">🎁</span>
+            <div>
+                <p class="bonus-card-label">Bonus ballaringiz</p>
+                <p class="bonus-card-value">{{ user.bonus_points }} <span>ball</span></p>
+            </div>
+        </div>
+        <p class="bonus-card-hint">Har bir buyurtmadan summaning 1% miqdorida ball to'planadi va keyingi xaridlarda ishlatiladi.</p>
+    </section>
+
+    <div class="profile-layout">
+        <!-- Shaxsiy ma'lumotlar formasi -->
+        <section class="profile-card">
+            <h2>Shaxsiy ma'lumotlar</h2>
+
+            <form method="post" enctype="multipart/form-data" class="profile-form">
+                {% csrf_token %}
+
+                <div class="avatar-upload">
+                    <div class="avatar-upload-preview" id="avatarPreview">
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="">
+                        {% else %}
+                            <span>{{ user.initial }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="avatar-upload-control">
+                        <label for="{{ form.avatar.id_for_label }}" class="btn-small">Rasm tanlash</label>
+                        <span class="avatar-upload-hint">JPG yoki PNG, kvadrat rasm tavsiya etiladi</span>
+                        <div class="avatar-upload-input">{{ form.avatar }}</div>
+                        {% for error in form.avatar.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                    {{ form.full_name }}
+                    {% for error in form.full_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                </div>
+
+                <!-- Telefon o'zgartirilmaydi (login identifikatori) -->
+                <div class="form-field">
+                    <label>Telefon raqami</label>
+                    <input type="text" value="{{ user.phone_number }}" disabled class="input-disabled">
+                    <span class="field-hint">Telefon raqami tizimga kirish uchun ishlatiladi va o'zgartirilmaydi.</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% for error in form.email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="{{ form.birth_date.id_for_label }}">{{ form.birth_date.label }}</label>
+                        {{ form.birth_date }}
+                        {% for error in form.birth_date.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                    </div>
+                    <div class="form-field">
+                        <label for="{{ form.gender.id_for_label }}">{{ form.gender.label }}</label>
+                        {{ form.gender }}
+                        {% for error in form.gender.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="notify-settings">
+                    <h3>Bildirishnoma sozlamalari</h3>
+                    <label class="notify-toggle">
+                        {{ form.notify_sms }}
+                        <span>{{ form.notify_sms.label }}</span>
+                    </label>
+                    <label class="notify-toggle">
+                        {{ form.notify_email }}
+                        <span>{{ form.notify_email.label }}</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Saqlash</button>
+            </form>
+
+            <div class="profile-actions">
+                <a href="{% url 'accounts:password_change' %}" class="profile-action-link">🔑 Parolni o'zgartirish</a>
+                <a href="{% url 'accounts:logout' %}" class="profile-action-link profile-action-danger">↩ Tizimdan chiqish</a>
+            </div>
+        </section>
+
+        <!-- Manzillar -->
+        <section class="profile-card">
+            <div class="profile-card-header">
+                <h2>Manzillar</h2>
+                <a href="{% url 'accounts:address_add' %}" class="btn-small">+ Yangi manzil</a>
+            </div>
+
+            {% if addresses %}
+                <ul class="address-list">
+                    {% for address in addresses %}
+                        <li class="address-item {% if address.is_default %}address-default{% endif %}">
+                            <div>
+                                <p><strong>{{ address.region }}, {{ address.district }}</strong></p>
+                                <p>{{ address.street }}</p>
+                                {% if address.landmark %}<p class="address-landmark">{{ address.landmark }}</p>{% endif %}
+                                <p>{{ address.phone_number }}</p>
+                                {% if address.is_default %}<span class="badge-default">Asosiy</span>{% endif %}
+                            </div>
+                            <div class="address-actions">
+                                <a href="{% url 'accounts:address_edit' address_id=address.id %}">Tahrirlash</a>
+                                <form action="{% url 'accounts:address_delete' address_id=address.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-remove">O'chirish</button>
+                                </form>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="profile-empty">
+                    <p>Hozircha manzil qo'shilmagan.</p>
+                    <a href="{% url 'accounts:address_add' %}" class="btn btn-primary btn-sm">Manzil qo'shish</a>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <!-- Ko'rilgan mahsulotlar tarixi -->
+    {% if recently_viewed %}
+    <section class="profile-viewed">
+        <div class="profile-card-header">
+            <h2>Yaqinda ko'rilgan mahsulotlar</h2>
+        </div>
+        <div class="product-grid">
+            {% for product in recently_viewed %}
+                {% include "catalog/_product_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+(function () {
+    var input = document.getElementById('{{ form.avatar.id_for_label }}');
+    var preview = document.getElementById('avatarPreview');
+    if (input && preview) {
+        input.addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            var url = URL.createObjectURL(file);
+            preview.innerHTML = '<img src="' + url + '" alt="">';
+        });
+    }
+})();
+</script>
+{% endblock %}

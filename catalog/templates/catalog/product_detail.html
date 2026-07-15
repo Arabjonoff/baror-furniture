@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load catalog_extras %}
+
+{% block title %}{{ product.name }} — Barormebel{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+    <div class="product-gallery">
+        <div class="product-gallery-main">
+            {% with main_image=product.images.first %}
+                <img id="mainImage" src="{% if main_image %}{{ main_image.image.url }}{% endif %}" alt="{{ product.name }}">
+            {% endwith %}
+        </div>
+        {% if product.images.count > 1 %}
+            <div class="product-gallery-thumbs">
+                {% for image in product.images.all %}
+                    <img src="{{ image.image.url }}" alt="{{ product.name }}" class="thumb {% if forloop.first %}is-active{% endif %}">
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lightboxClose" aria-label="Yopish">&times;</button>
+        <button class="lightbox-arrow lightbox-arrow-prev" id="lightboxPrev" aria-label="Oldingi rasm">&#10094;</button>
+        <img class="lightbox-image" id="lightboxImage" src="" alt="{{ product.name }}">
+        <button class="lightbox-arrow lightbox-arrow-next" id="lightboxNext" aria-label="Keyingi rasm">&#10095;</button>
+    </div>
+
+    <div class="product-info">
+        <div class="product-title-row">
+            <h1>{{ product.name }}</h1>
+            {% include "wishlist/_toggle_button.html" with product=product extra_class="wishlist-btn-detail" %}
+        </div>
+        <p class="product-category"><a href="{% url 'catalog:product_list_by_category' category_slug=product.category.slug %}">{{ product.category.name }}</a></p>
+
+        <div class="product-price-block">
+            {% if product.old_price %}
+                <span class="price-old">{{ product.old_price|money }} so'm</span>
+                <span class="badge badge-discount">-{{ product.get_discount_percent }}%</span>
+            {% endif %}
+            <span class="price-current">{{ product.price|money }} so'm</span>
+        </div>
+
+        <p class="product-availability {% if not product.in_stock %}unavailable{% endif %}">
+            {% if product.in_stock %}Omborda: {{ product.stock }} dona{% else %}Tugagan{% endif %}
+        </p>
+
+        {% if product.colors.all %}
+            <div class="product-colors">
+                <h3>Ranglar</h3>
+                <div class="color-swatches">
+                    {% for color in product.colors.all %}
+                        <span class="color-swatch {% if forloop.first %}selected{% endif %}"
+                              style="background-color: {{ color.color_hex }};"
+                              title="{{ color.color_name }}"
+                              data-color-name="{{ color.color_name }}"></span>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <table class="product-dimensions">
+            <tbody>
+                {% if product.width %}<tr><th>Kengligi</th><td>{{ product.width }} sm</td></tr>{% endif %}
+                {% if product.height %}<tr><th>Balandligi</th><td>{{ product.height }} sm</td></tr>{% endif %}
+                {% if product.depth %}<tr><th>Chuqurligi</th><td>{{ product.depth }} sm</td></tr>{% endif %}
+                {% if product.weight %}<tr><th>Og'irligi</th><td>{{ product.weight }} kg</td></tr>{% endif %}
+                {% if product.material %}<tr><th>Material</th><td>{{ product.material.name }}</td></tr>{% endif %}
+                {% if product.room_type %}<tr><th>Xona turi</th><td>{{ product.room_type.name }}</td></tr>{% endif %}
+            </tbody>
+        </table>
+
+        <form action="{% url 'cart:add' product_id=product.id %}" method="post" class="add-to-cart-form ajax-add-to-cart-form">
+            {% csrf_token %}
+            {% with first_color=product.colors.first %}
+                <input type="hidden" name="color" value="{% if first_color %}{{ first_color.color_name }}{% endif %}" class="selected-color-input">
+            {% endwith %}
+            <label for="quantity">Miqdori:</label>
+            <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}">
+            <button type="submit" class="btn btn-primary" {% if not product.in_stock %}disabled{% endif %}>
+                Savatga qo'shish
+            </button>
+        </form>
+
+        <div class="product-description">
+            <h3>Tavsif</h3>
+            <p>{{ product.description|linebreaks }}</p>
+        </div>
+    </div>
+</div>
+
+{% if similar_products %}
+<section class="section">
+    <h2 class="section-title">O'xshash mahsulotlar</h2>
+    <div class="product-grid">
+        {% for product in similar_products %}
+            {% include "catalog/_product_card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

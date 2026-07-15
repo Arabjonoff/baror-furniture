@@ -1,0 +1,84 @@
+{% extends "dashboard/base.html" %}
+{% load catalog_extras %}
+
+{% block title %}Buyurtma #{{ order.id }}{% endblock %}
+{% block heading %}Buyurtma #{{ order.id }}{% endblock %}
+{% block subheading %}{{ order.created_at|date:"d F Y, H:i" }}{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'dashboard:orders' %}" class="db-btn db-btn-sm" style="margin-bottom:18px;">← Buyurtmalarga qaytish</a>
+
+<div class="db-detail-grid">
+    <!-- Buyurtma mahsulotlari -->
+    <div class="db-panel">
+        <div class="db-panel-head"><h2>Mahsulotlar</h2></div>
+        <div class="db-table-wrap">
+            <table class="db-table">
+                <thead><tr><th>Mahsulot</th><th>Rang</th><th>Narx</th><th>Soni</th><th>Jami</th></tr></thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                        <tr>
+                            <td><div class="prod-cell">
+                                {% with img=item.product.images.first %}<img class="prod-thumb" src="{% if img %}{{ img.image.url }}{% endif %}" alt="">{% endwith %}
+                                <span class="db-cell-strong">{{ item.product.name }}</span>
+                            </div></td>
+                            <td class="db-cell-muted">{{ item.color|default:"—" }}</td>
+                            <td>{{ item.price|money }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td class="db-cell-strong">{{ item.get_cost|money }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="db-panel-body">
+            <div class="db-total-row"><span>Jami summa</span><span>{{ order.total_price|money }} so'm</span></div>
+        </div>
+    </div>
+
+    <div>
+        <!-- Holatni yangilash -->
+        <div class="db-panel">
+            <div class="db-panel-head"><h2>Holatni boshqarish</h2></div>
+            <div class="db-panel-body">
+                <form method="post" class="db-field" style="gap:14px;">
+                    {% csrf_token %}
+                    <div class="db-field">
+                        <label>Buyurtma holati</label>
+                        <select name="status" class="db-select" style="width:100%;">
+                            {% for code, label in status_choices %}
+                                <option value="{{ code }}" {% if order.status == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="db-field">
+                        <label>To'lov holati</label>
+                        <select name="payment_status" class="db-select" style="width:100%;">
+                            {% for code, label in payment_choices %}
+                                <option value="{{ code }}" {% if order.payment_status == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="db-btn db-btn-primary">Saqlash</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Mijoz ma'lumotlari -->
+        <div class="db-panel">
+            <div class="db-panel-head"><h2>Mijoz va yetkazib berish</h2></div>
+            <div class="db-panel-body">
+                <div class="db-info-row"><span class="k">Ism</span><span class="v">{{ order.full_name }}</span></div>
+                <div class="db-info-row"><span class="k">Telefon</span><span class="v">{{ order.phone }}</span></div>
+                <div class="db-info-row"><span class="k">Yetkazish</span><span class="v">{{ order.get_delivery_type_display }}</span></div>
+                <div class="db-info-row"><span class="k">Viloyat</span><span class="v">{{ order.region }}</span></div>
+                <div class="db-info-row"><span class="k">Tuman</span><span class="v">{{ order.district }}</span></div>
+                <div class="db-info-row"><span class="k">Manzil</span><span class="v">{{ order.address }}</span></div>
+                {% if order.comment %}<div class="db-info-row"><span class="k">Izoh</span><span class="v">{{ order.comment }}</span></div>{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

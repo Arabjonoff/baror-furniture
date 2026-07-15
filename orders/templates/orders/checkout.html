@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load catalog_extras %}
+
+{% block title %}Buyurtma berish — Barormebel{% endblock %}
+
+{% block content %}
+<h1>Buyurtma berish</h1>
+
+<div class="checkout-layout">
+    <div class="checkout-form-wrapper">
+        {% if form.non_field_errors %}
+            <ul class="form-errors">
+                {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-field {% if field.name == 'comment' %}form-field-wide{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <ul class="field-errors">
+                            {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Buyurtmani tasdiqlash</button>
+        </form>
+    </div>
+
+    <aside class="checkout-summary">
+        <h2>Buyurtma tarkibi</h2>
+        <ul class="checkout-item-list">
+            {% for item in cart %}
+                <li>
+                    <span>{{ item.product.name }}{% if item.color %} ({{ item.color }}){% endif %} &times; {{ item.quantity }}</span>
+                    <span>{{ item.total_price|money }} so'm</span>
+                </li>
+            {% endfor %}
+        </ul>
+        <p class="checkout-total">Jami: <strong>{{ cart.get_total_price|money }} so'm</strong></p>
+        <p class="checkout-payment-note">To'lov usuli: yetkazib berishda naqd pul bilan.</p>
+    </aside>
+</div>
+{% endblock %}
