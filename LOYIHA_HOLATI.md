@@ -115,6 +115,78 @@ Yurakcha tugmasi dizayni butun sayt bo'ylab qayta ishlandi (faqat `static/css/st
 
 Brauzerda tekshirildi: bosh sahifa, katalog, mahsulot sahifasi, sevimlilar (bo'sh va to'la) — barchasi izchil.
 
+### Bosqich 12 — Logo joylashtirish
+
+`static/img/logo.svg` (brend wordmark, 1600×123, jigarrang/orange) header va footer'ga qo'yildi.
+- Header: matnli "Barormebel" o'rniga SVG rasm (balandligi 42px)
+- Footer: matnli logo o'rniga SVG (balandligi 52px)
+- Rasmsiz bo'lsa avvalgidek matn (`.logo-img`, `.footer-logo-img` CSS)
+
+### Bosqich 13 — Buyurtma himoyasi (login talab qilinadi)
+
+`orders/views.py` `checkout_view`ga `@login_required` qo'shildi. Endi tizimga **kirmagan foydalanuvchi buyurtma bera olmaydi** — avtomatik login sahifasiga yo'naltiriladi. Buyurtma har doim tizimga kirgan foydalanuvchiga tegishli (`user=request.user`).
+
+### Bosqich 14 — Material va Xona turi — alohida modellar (admin boshqaradi)
+
+Ilgari `Product.material` va `Product.room_type` qattiq yozilgan `choices` edi (admin o'zgartira olmasdi). Endi alohida **modellar**:
+- Yangi **`Material`** va **`RoomType`** modellari (`name`, `slug`)
+- `Product.material` / `room_type` endi ular uchun **ForeignKey** (`SET_NULL`)
+- Admin panelda ro'yxatdan o'tkazildi — admin qo'shadi/tahrirlaydi/o'chiradi
+- Maxsus data-migratsiya (`0003_material_roomtype.py`) bilan mavjud qiymatlar saqlab qolindi
+- `views.py` filtr (slug bo'yicha), `product_list.html` va `product_detail.html` moslandi
+
+### Bosqich 15 — Banner rasmi ko'rinmaslik muammosi (ad-blocker)
+
+**Muammo:** admin banner rasmi yuklaydi, lekin saytda ko'rinmaydi. `curl` bilan 200, brauzerda esa yo'q.
+**Sabab (aniqlangan):** rasm yo'li `/media/**banners**/...` edi. **Reklama bloklovchilar** (uBlock/AdBlock/Brave) URL'da "banner" so'zi bo'lsa uni reklama deb bloklaydi (`responseStatus=0`).
+**Yechim:** yuklash papkasi `banners/` → **`slides/`** ga o'zgartirildi (`Banner.image upload_to='slides/'`), mavjud fayllar ko'chirildi, baza yangilandi (`0004_alter_banner_image`).
+> **Eslatma:** URL/fayl nomida "banner", "ad" kabi so'zlardan qoching — bloklovchilar to'sadi.
+
+### Bosqich 16 — Banner UI/UX (rasm + matn boshqaruvi)
+
+`home.html` va CSS:
+- Bannerda **rasm bo'lsa** — toza ko'rsatiladi; **matn/tugma ham kiritilgan bo'lsa** (`has-content`) — rasm ustida o'qilishi uchun qoraytiruvchi qatlam bilan chiqadi
+- **Rasmsiz** banner — gradient fon + matn (avvalgidek)
+- Balandlik **16:6 nisbatga** moslandi (`aspect-ratio`, `cover`) — qirqilmaydi/yo'lakcha yo'q
+- Mobil ekranda matnli bannerlar siqilmasligi uchun `min-height: 320px`
+
+### Bosqich 17 — O'xshash mahsulotlar (detail sahifada)
+
+`product_detail` view kengaytirildi: bo'lim doim to'ladi (4 tagacha) — avval **o'sha kategoriya**, yetmasa **o'sha xona turi/material (tag)**, u ham yetmasa **boshqa mavjud mahsulotlar**. Shablonda "O'xshash mahsulotlar" bo'limi allaqachon bor edi.
+
+### Bosqich 18 — Profil mukammallashtirish (avatar + UI/UX)
+
+User modeliga qo'shildi: **`avatar`** (`media/avatars/`), **`email`**, **`birth_date`**, **`gender`**. Avatar yo'q bo'lsa ism bosh harfi ko'rsatiladi (`initial` property).
+Profil sahifasi to'liq qayta dizayn qilindi (`profile.html`, CSS):
+- **Hero header** — gradient fon, dumaloq avatar, ism, telefon, a'zolik sanasi, statistika plitalari (buyurtma/manzil/sevimli soni)
+- Avatar yuklash (jonli preview bilan), fokus effektli forma maydonlari
+- Telefon o'zgarmas (login ID), amal tugmalari (parol/chiqish)
+- Django admin ham yangi maydonlar bilan yangilandi
+
+### Bosqich 19 — Bonus ballar, bildirishnomalar, ko'rilgan mahsulotlar
+
+- **🎁 Bonus ballar (sodiqlik dasturi):** `User.bonus_points`. Har buyurtmada summaning **1%** avtomatik qo'shiladi (`checkout_view`). Profilda alohida karta.
+- **🔔 Bildirishnoma sozlamalari:** `notify_sms`, `notify_email` (SMS/email marketing roziligi). Profil formasida belgilash oynachalari.
+- **👁 Ko'rilgan mahsulotlar:** sessiyada kuzatiladi (`recently_viewed`, 12 tagacha), profil pastida karta grid.
+
+### Bosqich 20 — Maxsus boshqaruv paneli (Dashboard) — `/boshqaruv/`
+
+Django admin o'rniga zamonaviy, brendga mos **maxsus dashboard** (`dashboard` app):
+- **📊 Statistika:** 4 ta ko'rsatkich (daromad, buyurtmalar, mahsulotlar, mijozlar), 7 kunlik daromad grafigi, holat taqsimoti, oxirgi buyurtmalar, kam qoldiq, eng ko'p sotilganlar
+- **🧾 Buyurtmalar:** filtr + qidiruv, rangli badge'lar, tafsilot + holat/to'lovni yangilash
+- **🛋️ Mahsulotlar:** qidiruv + filtr, qo'shish/tahrir/o'chirish (`ProductDashboardForm`)
+- **👥 Mijozlar:** buyurtma soni, xarid summasi, bonus bilan ro'yxat
+- To'q sidebar, rangli badge, mobilga moslashuvchan; faqat **staff** kira oladi (`@staff_member_required`)
+- Sayt header'ida "Boshqaruv" tugmasi (staff uchun), yon menyuda yangi buyurtmalar soni (context processor)
+- Fayllar: `dashboard/` (views, urls, context_processors, 6 shablon), `catalog/forms_dashboard.py`, `static/css/dashboard.css`
+
+### Bosqich 21 — GitHub'ga yuklash
+
+Loyiha git repozitoriyaga aylantirildi va **https://github.com/Arabjonoff/baror-furniture** ga push qilindi (`main` branch).
+- `.gitignore` kengaytirildi; **`.env`, `db.sqlite3`, `media/`, `venv/`, `.claude/settings.local.json`** yuklanmadi (maxfiylik saqlandi)
+- `README.md` (o'rnatish + deployment yo'riqnomasi) va `.env.example` qo'shildi
+- **Keyingi qadam:** foydalanuvchi serverga deploy qiladi — serverda `.env` qo'lda yaratiladi (`DEBUG=False`, yangi `SECRET_KEY`, `ALLOWED_HOSTS`, PostgreSQL), `media/` qayta yuklanadi
+
 ## Test/kirish ma'lumotlari
 
 - **Admin panel:** `http://127.0.0.1:8000/admin/`
@@ -136,15 +208,26 @@ Sayt: `http://127.0.0.1:8000/`
 Foydalanuvchi tomonidan aytilgan, lekin hali amalga oshirilmagan:
 
 1. ~~**Sevimlilar (Wishlist)**~~ — ✅ bajarildi (Bosqich 10)
-2. **Sharh va reyting** — mahsulotga baho
-3. **Taqqoslash** — bir nechta mebelni solishtirish
-4. **Chegirma/promokod tizimi**
-5. **Telegram bot** — adminga yangi buyurtma haqida xabarnoma
-6. **SEO** — meta teglar, sitemap, chiroyli URL'lar
-7. **Yetkazib berish narxi kalkulyatori** — viloyatga qarab
-8. **Online to'lov** (Bosqich 7) — Payme/Click/Uzum, faqat alohida so'ralganda boshlanadi
+2. ~~**Sodiqlik dasturi (bonus ballar)**~~ — ✅ bajarildi (Bosqich 19)
+3. ~~**Maxsus boshqaruv paneli (dashboard)**~~ — ✅ bajarildi (Bosqich 20)
+4. **Sharh va reyting** — mahsulotga baho
+5. **Taqqoslash** — bir nechta mebelni solishtirish
+6. **Chegirma/promokod tizimi** — bonus ballarni xaridda ishlatish ham shu yerga kiradi
+7. **Telegram bot** — adminga yangi buyurtma haqida xabarnoma; SMS/email marketing (rozilik allaqachon yig'ilyapti — Bosqich 19)
+8. **SEO** — meta teglar, sitemap, chiroyli URL'lar
+9. **Yetkazib berish narxi kalkulyatori** — viloyatga qarab
+10. **Online to'lov** (Bosqich 7) — Payme/Click/Uzum, faqat alohida so'ralganda boshlanadi
+11. **Dashboard qo'shimchalari** — sana oralig'i filtri, Excelga eksport, mahsulot rasmini shu paneldan yuklash
 
 ## Bilinadigan kichik narsalar
 
-- `media/` papkadagi ba'zi test rasmlar (masalan noto'g'ri o'lchamdagi banner rasmlari) tozalab qo'yilgan — bannerlarga hozircha rasm yo'q, standart gradient fon ishlatiladi. Banner uchun tavsiya etilgan o'lcham: **~1600×6a00 px, gorizontal**.
-- Ba'zi test mahsulotlarning `stock` qiymati checkout testlari tufayli kamaygan bo'lishi mumkin — real ishlatishda admin panel orqali yangilang.
+- **Banner rasmlari** endi `media/slides/` papkasida (ad-blocker sababli "banners"dan ko'chirilgan — Bosqich 15). Tavsiya etilgan o'lcham: **~1600×600 px, gorizontal, 16:6 nisbat**. URL/fayl nomida "banner", "ad" so'zlaridan qoching.
+- Ba'zi test mahsulotlarning `stock` qiymati checkout testlari tufayli kamaygan bo'lishi mumkin — real ishlatishda admin panel yoki yangi **dashboard** (`/boshqaruv/`) orqali yangilang.
+- `media/` va `db.sqlite3` git'ga yuklanmaydi (Bosqich 21) — serverda alohida boshqariladi.
+
+## Sessiyada aniqlangan muhim saboqlar
+
+- **Ad-blocker "banner" so'zini bloklaydi** (Bosqich 15) — media/statik yo'llarida "banner", "ad", "promo" kabi so'zlardan qoching.
+- **Django dev-server media serveri ishonchli** — Windows'da ham 200 qaytaradi; muammo odatda brauzer/kengaytma tomonida bo'ladi (Resource Timing `responseStatus`/`transferSize` bilan tekshiring).
+- **CSS: inline element'ga `width`/`height` qo'llanmaydi** — progress bar `.fill`ga `display:block` kerak bo'ldi (dashboard).
+- **Django admin custom User** — yangi maydon qo'shilganda `fieldsets`ni ham yangilash kerak.
