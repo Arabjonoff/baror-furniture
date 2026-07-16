@@ -51,6 +51,13 @@
     </table>
 
     <div class="cart-summary">
+        {% if order.discount %}
+            <p class="cart-total-line">Mahsulotlar: <span>{{ order.subtotal|money }} so'm</span></p>
+            <p class="cart-total-line cart-discount-line">
+                Chegirma{% if order.promo_code %} ({{ order.promo_code }}){% endif %}:
+                <span>&minus;{{ order.discount|money }} so'm</span>
+            </p>
+        {% endif %}
         <p class="cart-total">Jami: <strong>{{ order.total_price|money }} so'm</strong></p>
         <a href="{% url 'catalog:product_list' %}" class="btn btn-primary">Xaridni davom ettirish</a>
     </div>

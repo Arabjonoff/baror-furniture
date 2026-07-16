@@ -187,11 +187,31 @@ Loyiha git repozitoriyaga aylantirildi va **https://github.com/Arabjonoff/baror-
 - `README.md` (o'rnatish + deployment yo'riqnomasi) va `.env.example` qo'shildi
 - **Keyingi qadam:** foydalanuvchi serverga deploy qiladi — serverda `.env` qo'lda yaratiladi (`DEBUG=False`, yangi `SECRET_KEY`, `ALLOWED_HOSTS`, PostgreSQL), `media/` qayta yuklanadi
 
+### Bosqich 22 — SEO (qidiruv tizimlariga moslash)
+
+Sayt Google/Yandex uchun indekslashga tayyorlandi:
+- **`sitemap.xml`** — Django `django.contrib.sitemaps` frameworki (`catalog/sitemaps.py`): statik sahifalar, faol kategoriyalar va sotuvdagi mahsulotlar (mahsulotlarda `lastmod`). URL: `/sitemap.xml`. `INSTALLED_APPS`ga `django.contrib.sitemaps` qo'shildi.
+- **`robots.txt`** — `/robots.txt` (`templates/robots.txt`, `TemplateView`). Xaridorga xos sahifalar (`/savat/`, `/hisob/`, `/boshqaruv/`, `/admin/`...) `Disallow`, sitemap havolasi ko'rsatilgan.
+- **Meta teglar** — `base.html`da `description`, `keywords`, `robots`, **canonical** havola va to'liq **Open Graph** + Twitter Card teglari (blok orqali sahifalar o'zining meta'sini beradi).
+- **Sahifaga xos meta** — mahsulot sahifasi (`product_detail.html`) tavsifdan `description` va `og:image` (asosiy rasm), katalog/kategoriya sahifasi (`product_list.html`) o'z tavsifi bilan.
+- Modellarga **`get_absolute_url()`** qo'shildi (`Product`, `Category`) — sitemap va kanonik havolalar uchun.
+
+### Bosqich 23 — Promokod (chegirma kodlari)
+
+To'liq promokod tizimi:
+- **`PromoCode` modeli** (`orders/models.py`) — kod, chegirma turi (**foiz** yoki **belgilangan summa**), qiymati, foiz uchun **maksimal chegirma**, **minimal buyurtma summasi**, amal muddati (`valid_from`/`valid_until`), **foydalanish limiti** (`usage_limit`/`used_count`), faollik. `is_valid(total)` va `discount_for(total)` metodlari (chegirma summadan oshmaydi, kod avtomatik BOSH HARFga o'tadi).
+- **Savatda qo'llash** — promokod sessiyada saqlanadi (`orders/promo.py`). Savat sahifasida qo'llash/olib tashlash formasi, chegirma va yakuniy summa alohida ko'rsatiladi. URL'lar: `/savat/promokod/`, `/savat/promokod/olib-tashlash/`.
+- **Checkout** — buyurtma yaratishda chegirma qayta tekshiriladi, `Order.promo_code` + `Order.discount` saqlanadi, `total_price` chegirmadan **keyingi** summa. Promokod `used_count` oshiriladi, bonus ball yakuniy summadan hisoblanadi. Buyurtmadan keyin promokod sessiyadan tozalanadi.
+- **Order** modeliga `promo_code`, `discount` maydonlari va `subtotal` property qo'shildi. Checkout va tasdiqlash sahifalari chegirmani ko'rsatadi.
+- **Admin** — `PromoCodeAdmin` (kod, chegirma, limit, foydalanilgan soni; `fieldsets` bilan). CSS: savat/checkout summasi kartochka ko'rinishida, `.btn-secondary`, promokod formasi uslublari.
+
 ## Test/kirish ma'lumotlari
 
 - **Admin panel:** `http://127.0.0.1:8000/admin/`
 - **Superuser:** telefon `+998901112233`, parol `admin123`
 - Test mahsulotlari: "Yumshoq divan Milano", "Yozuv stoli Oslo", "Karavot Comfort 160x200" (kategoriyalar: Divan, Stol, Karavot)
+- **Test promokodlari:** `BAROR10` (10% chegirma, min. 1 000 000 so'm), `MINUS500` (500 000 so'm chegirma) — savatda sinab ko'rish uchun
+- **SEO:** `http://127.0.0.1:8000/sitemap.xml`, `http://127.0.0.1:8000/robots.txt`
 
 ## Loyihani ishga tushirish
 
@@ -212,9 +232,9 @@ Foydalanuvchi tomonidan aytilgan, lekin hali amalga oshirilmagan:
 3. ~~**Maxsus boshqaruv paneli (dashboard)**~~ — ✅ bajarildi (Bosqich 20)
 4. **Sharh va reyting** — mahsulotga baho
 5. **Taqqoslash** — bir nechta mebelni solishtirish
-6. **Chegirma/promokod tizimi** — bonus ballarni xaridda ishlatish ham shu yerga kiradi
+6. ~~**Chegirma/promokod tizimi**~~ — ✅ bajarildi (Bosqich 23). Qoldi: bonus ballarni xaridda ishlatish
 7. **Telegram bot** — adminga yangi buyurtma haqida xabarnoma; SMS/email marketing (rozilik allaqachon yig'ilyapti — Bosqich 19)
-8. **SEO** — meta teglar, sitemap, chiroyli URL'lar
+8. ~~**SEO**~~ — ✅ bajarildi (Bosqich 22): meta teglar, sitemap, robots.txt, Open Graph
 9. **Yetkazib berish narxi kalkulyatori** — viloyatga qarab
 10. **Online to'lov** (Bosqich 7) — Payme/Click/Uzum, faqat alohida so'ralganda boshlanadi
 11. **Dashboard qo'shimchalari** — sana oralig'i filtri, Excelga eksport, mahsulot rasmini shu paneldan yuklash

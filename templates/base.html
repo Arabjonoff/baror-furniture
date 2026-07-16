@@ -4,7 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Barormebel — mebel do'koni{% endblock %}</title>
+    <title>{% block title %}Barormebel — O'zbekistonda online mebel do'koni{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Barormebel — O'zbekiston bo'ylab sifatli va qulay mebellar: divan, karavot, stol, shkaf. Onlayn buyurtma bering, uyingizgacha yetkazib beramiz.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}mebel, divan, karavot, stol, shkaf, mebel do'koni, Toshkent, O'zbekiston, online mebel{% endblock %}">
+    <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+
+    <!-- Open Graph / ijtimoiy tarmoqlar -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name" content="Barormebel">
+    <meta property="og:title" content="{% block og_title %}Barormebel — mebel do'koni{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}O'zbekiston bo'ylab sifatli mebellar — onlayn buyurtma va yetkazib berish.{% endblock %}">
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo.svg' %}{% endblock %}">
+    <meta name="twitter:card" content="summary_large_image">
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>

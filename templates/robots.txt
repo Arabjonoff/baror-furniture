@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Xaridorga xos, indekslashga hojat yo'q sahifalar
+Disallow: /admin/
+Disallow: /boshqaruv/
+Disallow: /savat/
+Disallow: /sevimlilar/
+Disallow: /buyurtmalar/
+Disallow: /hisob/
+
+Sitemap: {{ request.scheme }}://{{ request.get_host }}/sitemap.xml

@@ -13,8 +13,57 @@ def _is_ajax(request):
 
 def cart_detail(request):
     """Savat sahifasi — mahsulotlar, miqdorlar va jami summa."""
+    from orders.promo import promo_context
+
     cart = Cart(request)
-    return render(request, 'cart/detail.html', {'cart': cart})
+    context = {'cart': cart}
+    context.update(promo_context(request, cart.get_total_price()))
+    return render(request, 'cart/detail.html', context)
+
+
+def cart_apply_promo(request):
+    """Savatga promokod qo'llaydi (sessiyaga saqlaydi)."""
+    from orders.models import PromoCode
+    from orders.promo import PROMO_SESSION_ID
+
+    if request.method != 'POST':
+        return redirect('cart:detail')
+
+    cart = Cart(request)
+    code = request.POST.get('code', '').strip().upper()
+
+    if not code:
+        messages.error(request, 'Promokodni kiriting.')
+        return redirect('cart:detail')
+
+    try:
+        promo = PromoCode.objects.get(code=code)
+    except PromoCode.DoesNotExist:
+        messages.error(request, 'Bunday promokod topilmadi.')
+        return redirect('cart:detail')
+
+    ok, error = promo.is_valid(cart.get_total_price())
+    if not ok:
+        messages.error(request, error)
+        return redirect('cart:detail')
+
+    request.session[PROMO_SESSION_ID] = promo.code
+    discount = promo.discount_for(cart.get_total_price())
+    messages.success(
+        request,
+        f'"{promo.code}" promokodi qo\'llanildi — {int(discount):,}'.replace(',', ' ') + " so'm chegirma!",
+    )
+    return redirect('cart:detail')
+
+
+def cart_remove_promo(request):
+    """Qo'llanilgan promokodni savatdan olib tashlaydi."""
+    from orders.promo import PROMO_SESSION_ID
+
+    if request.method == 'POST':
+        request.session.pop(PROMO_SESSION_ID, None)
+        messages.success(request, 'Promokod olib tashlandi.')
+    return redirect('cart:detail')
 
 
 def cart_add(request, product_id):

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -7,7 +9,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from cart.cart import Cart
 
 from .forms import CheckoutForm
-from .models import Order, OrderItem
+from .models import Order, OrderItem, PromoCode
+from .promo import PROMO_SESSION_ID, get_applied_promo
 
 
 @login_required
@@ -49,6 +52,11 @@ def checkout_view(request):
                     "Ombordagi qoldiq yetarli emas: " + ', '.join(insufficient),
                 )
             else:
+                subtotal = cart.get_total_price()
+                promo = get_applied_promo(request, subtotal)
+                discount = promo.discount_for(subtotal) if promo else Decimal('0')
+                final_total = subtotal - discount
+
                 with transaction.atomic():
                     order = Order.objects.create(
                         user=request.user,
@@ -59,7 +67,9 @@ def checkout_view(request):
                         address=address,
                         delivery_type=form.cleaned_data['delivery_type'],
                         comment=form.cleaned_data['comment'],
-                        total_price=cart.get_total_price(),
+                        promo_code=promo.code if promo else '',
+                        discount=discount,
+                        total_price=final_total,
                     )
                     for item in cart:
                         product = item['product']
@@ -73,14 +83,21 @@ def checkout_view(request):
                         product.stock -= item['quantity']
                         product.save(update_fields=['stock'])
 
-                    # Sodiqlik dasturi: buyurtma summasining 1% bonus ball sifatida qo'shiladi
-                    earned = int(cart.get_total_price() // 100)
+                    # Promokod foydalanish hisobini oshiramiz
+                    if promo:
+                        PromoCode.objects.filter(pk=promo.pk).update(
+                            used_count=F('used_count') + 1
+                        )
+
+                    # Sodiqlik dasturi: to'lanadigan summaning 1% bonus ball sifatida qo'shiladi
+                    earned = int(final_total // 100)
                     if earned:
                         request.user.bonus_points = F('bonus_points') + earned
                         request.user.save(update_fields=['bonus_points'])
                         request.user.refresh_from_db(fields=['bonus_points'])
 
                     cart.clear()
+                    request.session.pop(PROMO_SESSION_ID, None)
 
                 if earned:
                     messages.success(request, f"Buyurtmangiz uchun {earned} bonus ball qo'shildi!")
@@ -88,9 +105,15 @@ def checkout_view(request):
     else:
         form = CheckoutForm(initial=initial, user=request.user)
 
+    subtotal = cart.get_total_price()
+    promo = get_applied_promo(request, subtotal)
+    discount = promo.discount_for(subtotal) if promo else Decimal('0')
     context = {
         'form': form,
         'cart': cart,
+        'promo': promo,
+        'discount': discount,
+        'final_total': subtotal - discount,
     }
     return render(request, 'orders/checkout.html', context)
 

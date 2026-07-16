@@ -1,8 +1,87 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from accounts.models import phone_validator
 from catalog.models import Product
+
+
+class PromoCode(models.Model):
+    """Chegirma promokodi — admin yaratadi, xaridor savatda qo'llaydi."""
+
+    TYPE_PERCENT = 'foiz'
+    TYPE_FIXED = 'summa'
+    DISCOUNT_TYPE_CHOICES = [
+        (TYPE_PERCENT, 'Foiz (%)'),
+        (TYPE_FIXED, "Belgilangan summa (so'm)"),
+    ]
+
+    code = models.CharField('promokod', max_length=30, unique=True)
+    description = models.CharField('izoh', max_length=200, blank=True)
+    discount_type = models.CharField(
+        'chegirma turi', max_length=10, choices=DISCOUNT_TYPE_CHOICES, default=TYPE_PERCENT
+    )
+    discount_value = models.DecimalField('chegirma qiymati', max_digits=12, decimal_places=2)
+    max_discount = models.DecimalField(
+        'maksimal chegirma (faqat foiz uchun)', max_digits=12, decimal_places=2,
+        blank=True, null=True,
+        help_text="Foizli chegirma uchun eng yuqori summa (ixtiyoriy).",
+    )
+    min_order_amount = models.DecimalField(
+        'minimal buyurtma summasi', max_digits=12, decimal_places=2, default=0
+    )
+    valid_from = models.DateTimeField('amal boshlanishi', blank=True, null=True)
+    valid_until = models.DateTimeField('amal tugashi', blank=True, null=True)
+    usage_limit = models.PositiveIntegerField(
+        'umumiy foydalanish limiti', blank=True, null=True,
+        help_text="Bo'sh qoldirilsa — cheksiz.",
+    )
+    used_count = models.PositiveIntegerField('foydalanilgan soni', default=0)
+    is_active = models.BooleanField('faolmi', default=True)
+    created_at = models.DateTimeField('yaratilgan vaqti', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Promokod'
+        verbose_name_plural = 'Promokodlar'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.code
+
+    def save(self, *args, **kwargs):
+        self.code = self.code.strip().upper()
+        super().save(*args, **kwargs)
+
+    def is_valid(self, total, now=None):
+        """Promokod berilgan savat summasiga amal qiladimi — (bool, xabar) qaytaradi."""
+        now = now or timezone.now()
+        if not self.is_active:
+            return False, 'Bu promokod faol emas.'
+        if self.valid_from and now < self.valid_from:
+            return False, 'Promokod hali kuchga kirmagan.'
+        if self.valid_until and now > self.valid_until:
+            return False, 'Promokod muddati tugagan.'
+        if self.usage_limit is not None and self.used_count >= self.usage_limit:
+            return False, 'Promokod foydalanish limiti tugagan.'
+        if total < self.min_order_amount:
+            return False, (
+                f"Bu promokod {int(self.min_order_amount):,}".replace(',', ' ')
+                + " so'mdan yuqori buyurtmalarga amal qiladi."
+            )
+        return True, ''
+
+    def discount_for(self, total):
+        """Berilgan summa uchun chegirma miqdorini hisoblaydi (summadan oshib ketmaydi)."""
+        if self.discount_type == self.TYPE_PERCENT:
+            amount = total * self.discount_value / Decimal('100')
+            if self.max_discount:
+                amount = min(amount, self.max_discount)
+        else:
+            amount = self.discount_value
+        amount = min(amount, total)
+        return amount.quantize(Decimal('0.01'))
 
 
 class Order(models.Model):
@@ -60,7 +139,9 @@ class Order(models.Model):
     delivery_type = models.CharField(
         'yetkazib berish turi', max_length=20, choices=DELIVERY_TYPE_CHOICES
     )
-    total_price = models.DecimalField('jami summa', max_digits=12, decimal_places=2, default=0)
+    promo_code = models.CharField('qo\'llanilgan promokod', max_length=30, blank=True)
+    discount = models.DecimalField('chegirma summasi', max_digits=12, decimal_places=2, default=0)
+    total_price = models.DecimalField('jami summa (chegirmadan keyin)', max_digits=12, decimal_places=2, default=0)
     status = models.CharField('holat', max_length=20, choices=STATUS_CHOICES, default=STATUS_NEW)
     payment_status = models.CharField(
         "to'lov holati", max_length=20, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_PENDING
@@ -78,6 +159,11 @@ class Order(models.Model):
 
     def __str__(self):
         return f'Buyurtma #{self.id}'
+
+    @property
+    def subtotal(self):
+        """Chegirmagacha bo'lgan summa."""
+        return self.total_price + self.discount
 
 
 class OrderItem(models.Model):

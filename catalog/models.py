@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 
 
@@ -30,6 +31,9 @@ class Category(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('catalog:product_list_by_category', args=[self.slug])
 
 
 class Material(models.Model):
@@ -127,6 +131,9 @@ class Product(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('catalog:product_detail', args=[self.slug])
 
     def get_discount_percent(self):
         """Chegirma foizini hisoblaydi (old_price bo'lmasa yoki narxdan kichik bo'lsa 0)."""

@@ -41,7 +41,13 @@
                 </li>
             {% endfor %}
         </ul>
-        <p class="checkout-total">Jami: <strong>{{ cart.get_total_price|money }} so'm</strong></p>
+        <p class="cart-total-line">Mahsulotlar: <span>{{ cart.get_total_price|money }} so'm</span></p>
+        {% if discount %}
+            <p class="cart-total-line cart-discount-line">
+                Chegirma{% if promo %} ({{ promo.code }}){% endif %}: <span>&minus;{{ discount|money }} so'm</span>
+            </p>
+        {% endif %}
+        <p class="checkout-total">Jami: <strong>{{ final_total|money }} so'm</strong></p>
         <p class="checkout-payment-note">To'lov usuli: yetkazib berishda naqd pul bilan.</p>
     </aside>
 </div>

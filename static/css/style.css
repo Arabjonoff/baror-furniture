@@ -1101,21 +1101,99 @@ a {
 
 .cart-summary {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 24px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
     margin-top: 24px;
+    margin-left: auto;
+    max-width: 360px;
+    padding: 20px 22px;
+    background-color: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.cart-total-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--color-muted);
+    font-size: 0.95rem;
+}
+
+.cart-discount-line {
+    color: #2e8b57;
+    font-weight: 600;
 }
 
 .cart-total {
-    font-size: 1.15rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border);
 }
 
 .cart-checkout,
-.cart-empty-link,
-.cart-summary .btn {
-    width: auto;
+.cart-empty-link {
+    width: 100%;
     padding: 12px 28px;
+    margin-top: 6px;
+}
+
+/* Promokod */
+.cart-promo {
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.cart-promo-form {
+    display: flex;
+    gap: 8px;
+}
+
+.cart-promo-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    text-transform: uppercase;
+}
+
+.cart-promo-form .btn {
+    width: auto;
+    white-space: nowrap;
+}
+
+.cart-promo-applied {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background-color: var(--color-bg-alt);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+}
+
+.cart-promo-applied strong {
+    color: var(--color-primary-dark);
+    letter-spacing: 0.5px;
+}
+
+.btn-secondary {
+    background-color: var(--color-bg-alt);
+    color: var(--color-primary-dark);
+    border: 1px solid var(--color-border);
+    transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-border);
 }
 
 /* Toast (AJAX savatga qo'shish xabari) */

@@ -55,7 +55,29 @@
     </table>
 
     <div class="cart-summary">
-        <p class="cart-total">Jami: <strong>{{ cart.get_total_price|money }} so'm</strong></p>
+        <div class="cart-promo">
+            {% if promo %}
+                <div class="cart-promo-applied">
+                    <span>Promokod <strong>{{ promo.code }}</strong> qo'llanildi</span>
+                    <form action="{% url 'cart:remove_promo' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-remove">Olib tashlash</button>
+                    </form>
+                </div>
+            {% else %}
+                <form action="{% url 'cart:apply_promo' %}" method="post" class="cart-promo-form">
+                    {% csrf_token %}
+                    <input type="text" name="code" placeholder="Promokod" value="{{ request.GET.code }}">
+                    <button type="submit" class="btn btn-secondary">Qo'llash</button>
+                </form>
+            {% endif %}
+        </div>
+
+        <p class="cart-total-line">Mahsulotlar: <span>{{ cart.get_total_price|money }} so'm</span></p>
+        {% if discount %}
+            <p class="cart-total-line cart-discount-line">Chegirma: <span>&minus;{{ discount|money }} so'm</span></p>
+        {% endif %}
+        <p class="cart-total">Jami: <strong>{{ final_total|money }} so'm</strong></p>
         <a href="{% url 'orders:checkout' %}" class="btn btn-primary cart-checkout">Buyurtma berish</a>
     </div>
 {% else %}

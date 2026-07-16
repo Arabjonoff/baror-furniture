@@ -1,7 +1,12 @@
 {% extends "base.html" %}
-{% load catalog_extras %}
+{% load catalog_extras static %}
 
 {% block title %}{{ product.name }} — Barormebel{% endblock %}
+{% block meta_description %}{% if product.description %}{{ product.description|striptags|truncatewords:30 }}{% else %}{{ product.name }} — Barormebeldan sifatli mebel. Onlayn buyurtma bering, O'zbekiston bo'ylab yetkazib beramiz.{% endif %}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_title %}{{ product.name }} — Barormebel{% endblock %}
+{% block og_description %}{% if product.description %}{{ product.description|striptags|truncatewords:30 }}{% else %}{{ product.name }} — sifatli mebel, onlayn buyurtma.{% endif %}{% endblock %}
+{% block og_image %}{% with main_image=product.images.first %}{{ request.scheme }}://{{ request.get_host }}{% if main_image %}{{ main_image.image.url }}{% else %}{% static 'img/logo.svg' %}{% endif %}{% endwith %}{% endblock %}
 
 {% block content %}
 <div class="product-detail">

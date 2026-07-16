@@ -4,6 +4,8 @@
 {% block title %}
     {% if category %}{{ category.name }} — Barormebel{% else %}Katalog — Barormebel{% endif %}
 {% endblock %}
+{% block meta_description %}{% if category %}{{ category.name }} toifasidagi mebellar — Barormebel katalogi. Narx, material va xona turi bo'yicha tanlang, onlayn buyurtma bering.{% else %}Barormebel mebel katalogi — divan, karavot, stol, shkaf va boshqalar. Filtrlab tanlang, O'zbekiston bo'ylab yetkazib beramiz.{% endif %}{% endblock %}
+{% block og_title %}{% if category %}{{ category.name }}{% else %}Katalog{% endif %} — Barormebel{% endblock %}
 
 {% block content %}
 <div class="catalog-layout">
