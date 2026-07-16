@@ -242,9 +242,29 @@ Loyiha production'ga tayyorlandi. Stek: **gunicorn + systemd + nginx + PostgreSQ
 - **`.gitattributes`** — `.sh` va `deploy/*` fayllar doim **LF** (Windows CRLF Linux skriptlarini buzadi).
 - **Xavfsizlik qarori:** root parol kodда/CI'да saqlanmaydi — deploy SSH kalitlari + GitHub Secrets orqali. Serverni root talab qiladigan bir martalik `bootstrap.sh` ni foydalanuvchi o'zi ishga tushiradi.
 
+### Bosqich 27 — Serverga real deploy va CI/CD ulash (JONLI) ✅
+
+Loyiha **https://barormebel.uz** da jonli ishlaydi. Server: Ubuntu VPS (`5.104.108.235`). Bootstrap muvaffaqiyatli o'tdi, HTTPS (Let's Encrypt) o'rnatildi, CI/CD to'liq ishlaydi (`main`'ga push → CI → avtomatik deploy).
+
+**Deploy paytida yuzaga kelgan real muammolar va saboqlar:**
+
+1. **Statik fayllar 403 (CSS/JS/dizayn umuman ishlamadi).** Sabab: `$HOME` (`/home/barormebel`) ruxsati `0750` — nginx (`www-data`) papkaga kira olmadi. Yechim: `chmod o+x /home/barormebel` + `chmod -R o+rX staticfiles media`. **Repoga qo'shildi** (`bootstrap.sh`, `deploy.sh`) va `settings.py`ga `FILE_UPLOAD_PERMISSIONS=0o644` (yangi media yuklamalar o'qishga ochiq bo'lishi uchun).
+2. **GitHub Secrets — har biri ALOHIDA qo'shiladi.** Boshida bitta noto'g'ri nomli secret qo'shilgan edi → deploy `Error: missing server host` berdi. `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY` — uchtasi alohida, aniq nomlar bilan.
+3. **SSH publickey rad etildi** (`unable to authenticate, attempted methods [none publickey]`). Sabab: ochiq kalit serverdagi `/home/barormebel/.ssh/authorized_keys` ga to'g'ri qo'shilmagan edi. Yechim: kalitni `tee` bilan aniq yozib, `.ssh` 700 / `authorized_keys` 600 / egasi `barormebel` qilish.
+4. **Diagnostika usuli:** GitHub Actions loglari saqlangan `git credential` (token) orqali API'dan o'qildi — `actions/jobs/{id}/logs`. `gh` CLI o'rnatilmagan bo'lsa ham log ko'rish mumkin.
+
+**Server buyruqlari (kundalik):**
+- Loglar: `journalctl -u barormebel -f`
+- Restart: `sudo systemctl restart barormebel`
+- Superuser: `sudo -u barormebel /home/barormebel/barormebel/venv/bin/python /home/barormebel/barormebel/manage.py createsuperuser`
+
+> **Eslatma:** root parolini almashtirish tavsiya etilgan (sozlash paytida oshkor bo'lgan).
+
 ## Test/kirish ma'lumotlari
 
-- **Admin panel:** `http://127.0.0.1:8000/admin/`
+- **🌐 Jonli sayt (production):** https://barormebel.uz · Dashboard: https://barormebel.uz/boshqaruv/ · Admin: https://barormebel.uz/admin/
+- **Server:** Ubuntu VPS `5.104.108.235` (gunicorn+systemd+nginx+PostgreSQL). Deploy avtomatik (GitHub'ga push).
+- **Admin panel (lokal):** `http://127.0.0.1:8000/admin/`
 - **Superuser:** telefon `+998901112233`, parol `admin123`
 - Test mahsulotlari: "Yumshoq divan Milano", "Yozuv stoli Oslo", "Karavot Comfort 160x200" (kategoriyalar: Divan, Stol, Karavot)
 - **Test promokodlari:** `BAROR10` (10% chegirma, min. 1 000 000 so'm), `MINUS500` (500 000 so'm chegirma) — savatda sinab ko'rish uchun

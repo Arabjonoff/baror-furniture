@@ -1,8 +1,12 @@
 # Barormebel — mebel do'koni
 
+🌐 **Jonli sayt:** [barormebel.uz](https://barormebel.uz)
+
 O'zbek tilidagi mebel do'koni uchun Django e-commerce platformasi: katalog, savat, sevimlilar,
 buyurtmalar, foydalanuvchi profili (bonus ballar, ko'rilgan mahsulotlar) va zamonaviy maxsus
 boshqaruv paneli (dashboard).
+
+Serverga joylashtirish va CI/CD bo'yicha to'liq yo'riqnoma: [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ## Texnologiyalar
 
