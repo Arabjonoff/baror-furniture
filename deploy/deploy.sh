@@ -18,6 +18,8 @@ venv/bin/python manage.py migrate --noinput
 
 echo ">>> Statik fayllar..."
 venv/bin/python manage.py collectstatic --noinput
+# nginx o'qiy olishi uchun (yangi fayllar cheklangan umask bilan yaratilishi mumkin)
+chmod -R o+rX "$APP_DIR/staticfiles" "$APP_DIR/media" 2>/dev/null || true
 
 echo ">>> Xizmat qayta ishga tushirilmoqda..."
 sudo /usr/bin/systemctl restart barormebel

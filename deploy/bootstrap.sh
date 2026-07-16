@@ -75,6 +75,12 @@ cd "$APP_DIR"
 sudo -u "$APP_USER" "$APP_DIR/venv/bin/python" manage.py migrate --noinput
 sudo -u "$APP_USER" "$APP_DIR/venv/bin/python" manage.py collectstatic --noinput
 
+# nginx (www-data) statik/media fayllarni o'qiy olishi uchun ruxsatlar
+# ($HOME odatda 0750 — www-data kira olmaydi, natijada CSS/JS 403 bo'ladi)
+sudo -u "$APP_USER" mkdir -p "$APP_DIR/media"
+chmod o+x "/home/$APP_USER"
+chmod -R o+rX "$APP_DIR/staticfiles" "$APP_DIR/media"
+
 echo ">>> [8/9] systemd + sudoers + nginx..."
 cp "$APP_DIR/deploy/barormebel.service" /etc/systemd/system/barormebel.service
 # CI deploy uchun: barormebel foydalanuvchisi parolsiz faqat shu xizmatni qayta ishga tushira oladi

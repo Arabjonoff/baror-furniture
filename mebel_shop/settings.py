@@ -142,6 +142,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Yuklangan fayllar nginx (www-data) uchun o'qishga ochiq bo'lsin (aks holda 403)
+FILE_UPLOAD_PERMISSIONS = 0o644
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
