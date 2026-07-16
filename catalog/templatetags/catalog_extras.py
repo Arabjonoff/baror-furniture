@@ -12,6 +12,14 @@ def querystring_without_page(get_params):
 
 
 @register.filter
+def dict_get(mapping, key):
+    """Shablonda dict qiymatini o'zgaruvchi kalit bo'yicha oladi ({{ d|dict_get:key }})."""
+    if hasattr(mapping, 'get'):
+        return mapping.get(key)
+    return None
+
+
+@register.filter
 def money(value):
     """Summani o'qishga qulay qiladi: har uch xonadan keyin bo'sh joy (masalan 4500000 -> 4 500 000)."""
     try:

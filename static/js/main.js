@@ -22,30 +22,64 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function getCsrfToken(scope) {
+        const el = (scope || document).querySelector('input[name="csrfmiddlewaretoken"]');
+        return el ? el.value : '';
+    }
+
+    function cartFetch(url, params, token) {
+        const body = new URLSearchParams(params || {});
+        if (token) body.append('csrfmiddlewaretoken', token);
+        return fetch(url, {
+            method: 'POST',
+            body: body,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        }).then(function (r) { return r.json(); });
+    }
+
+    // Mahsulot kartochkasida "Savatga qo'shish" tugmasi <-> miqdor stepperi almashuvi
+    function setCardState(control, inCart, quantity) {
+        const form = control.querySelector('.product-card-form');
+        const stepper = control.querySelector('.product-card-stepper');
+        if (!form || !stepper) return;
+        if (inCart) {
+            if (typeof quantity !== 'undefined') {
+                stepper.querySelector('.qty-input').value = quantity;
+            }
+            form.hidden = true;
+            stepper.hidden = false;
+        } else {
+            form.hidden = false;
+            stepper.hidden = true;
+        }
+    }
+
     document.querySelectorAll('.ajax-add-to-cart-form').forEach(function (form) {
         form.addEventListener('submit', function (event) {
             event.preventDefault();
-            const formData = new FormData(form);
             const button = form.querySelector('button[type="submit"]');
-            const originalText = button ? button.textContent : '';
+            const control = form.closest('.product-card-cart');
 
             if (button) {
                 button.disabled = true;
                 button.classList.add('is-loading');
-                button.textContent = "Qo'shilmoqda...";
             }
 
             fetch(form.action, {
                 method: 'POST',
-                body: formData,
+                body: new FormData(form),
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
             })
                 .then(function (response) {
                     return response.json();
                 })
                 .then(function (data) {
-                    if (data.ok) {
-                        updateCartCount(data.cart_count);
+                    if (!data.ok) return;
+                    updateCartCount(data.cart_count);
+                    if (control) {
+                        // Kartochkada tugmani miqdor stepperiga aylantiramiz
+                        setCardState(control, true, data.item_quantity || 1);
+                    } else {
                         showToast(data.message || "Savatga qo'shildi");
                     }
                 })
@@ -56,9 +90,63 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (button) {
                         button.disabled = false;
                         button.classList.remove('is-loading');
-                        button.textContent = originalText;
                     }
                 });
+        });
+    });
+
+    // Mahsulot kartochkasidagi miqdor stepperi (+/-); 1 dan pastga tushsa savatdan chiqadi
+    document.querySelectorAll('.product-card-cart').forEach(function (control) {
+        const stepper = control.querySelector('.product-card-stepper');
+        if (!stepper) return;
+        const input = stepper.querySelector('.qty-input');
+        const stock = parseInt(control.dataset.stock, 10) || 1;
+        const token = getCsrfToken(control);
+
+        function setQuantity(quantity) {
+            if (stepper.dataset.loading === 'true') return;
+            quantity = Math.min(quantity, stock);
+            stepper.dataset.loading = 'true';
+            stepper.classList.add('is-loading');
+
+            function done() {
+                stepper.dataset.loading = 'false';
+                stepper.classList.remove('is-loading');
+            }
+
+            if (quantity <= 0) {
+                cartFetch(control.dataset.removeUrl, {}, token)
+                    .then(function (data) {
+                        if (data.ok) {
+                            setCardState(control, false);
+                            updateCartCount(data.cart_count);
+                        }
+                    })
+                    .catch(function () { showToast("Xatolik yuz berdi, qayta urinib ko'ring."); })
+                    .finally(done);
+                return;
+            }
+
+            cartFetch(control.dataset.updateUrl, { quantity: quantity }, token)
+                .then(function (data) {
+                    if (data.ok && typeof data.quantity !== 'undefined') {
+                        input.value = data.quantity;
+                        updateCartCount(data.cart_count);
+                    }
+                })
+                .catch(function () { showToast("Xatolik yuz berdi, qayta urinib ko'ring."); })
+                .finally(done);
+        }
+
+        stepper.addEventListener('click', function (event) {
+            const btn = event.target.closest('.qty-btn');
+            if (!btn) return;
+            const current = parseInt(input.value, 10) || 1;
+            setQuantity(current + (btn.dataset.action === 'inc' ? 1 : -1));
+        });
+        input.addEventListener('change', function () {
+            const v = parseInt(input.value, 10);
+            setQuantity(isNaN(v) ? 1 : v);
         });
     });
 
@@ -113,6 +201,128 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         });
     });
+
+    // Savat sahifasi: miqdor stepperi, o'chirish va jonli yig'indi (AJAX)
+    const cartPage = document.getElementById('cartPage');
+    if (cartPage) {
+        const csrfInput = cartPage.querySelector('input[name="csrfmiddlewaretoken"]');
+        const csrfToken = csrfInput ? csrfInput.value : '';
+
+        function formatMoney(value) {
+            const n = Math.round(Number(value) || 0);
+            return n.toLocaleString('en-US').replace(/,/g, ' ');
+        }
+
+        function applySummary(data) {
+            const subtotalEl = document.getElementById('cartSubtotal');
+            const discountEl = document.getElementById('cartDiscount');
+            const discountLine = document.getElementById('cartDiscountLine');
+            const finalEl = document.getElementById('cartFinalTotal');
+            const countEl = document.getElementById('cartItemsCount');
+
+            if (subtotalEl) subtotalEl.textContent = formatMoney(data.subtotal) + " so'm";
+            if (finalEl) finalEl.textContent = formatMoney(data.final_total);
+            if (discountLine) {
+                if (data.discount > 0) {
+                    if (discountEl) discountEl.textContent = formatMoney(data.discount);
+                    discountLine.hidden = false;
+                } else {
+                    discountLine.hidden = true;
+                }
+            }
+            if (countEl) countEl.textContent = data.cart_count;
+            updateCartCount(data.cart_count);
+        }
+
+        function postCart(url, params) {
+            const body = new URLSearchParams(params);
+            body.append('csrfmiddlewaretoken', csrfToken);
+            return fetch(url, {
+                method: 'POST',
+                body: body,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            }).then(function (r) { return r.json(); });
+        }
+
+        function updateQuantity(item, quantity) {
+            const stepper = item.querySelector('.qty-stepper');
+            const input = item.querySelector('.qty-input');
+            const stock = parseInt(item.dataset.stock, 10) || 1;
+            quantity = Math.max(1, Math.min(quantity, stock));
+            if (stepper.dataset.loading === 'true') return;
+            stepper.dataset.loading = 'true';
+            stepper.classList.add('is-loading');
+
+            postCart(item.dataset.updateUrl, {
+                quantity: quantity,
+                color: item.dataset.color || '',
+            })
+                .then(function (data) {
+                    if (!data.ok) return;
+                    if (typeof data.quantity !== 'undefined') input.value = data.quantity;
+                    const totalEl = item.querySelector('.cart-item-total');
+                    if (totalEl && typeof data.item_total !== 'undefined') {
+                        totalEl.textContent = formatMoney(data.item_total) + " so'm";
+                    }
+                    applySummary(data);
+                })
+                .catch(function () {
+                    showToast("Xatolik yuz berdi, qayta urinib ko'ring.");
+                })
+                .finally(function () {
+                    stepper.dataset.loading = 'false';
+                    stepper.classList.remove('is-loading');
+                });
+        }
+
+        function removeItem(item) {
+            item.classList.add('is-removing');
+            postCart(item.dataset.removeUrl, { color: item.dataset.color || '' })
+                .then(function (data) {
+                    if (!data.ok) {
+                        item.classList.remove('is-removing');
+                        return;
+                    }
+                    setTimeout(function () {
+                        item.remove();
+                        if (data.empty) {
+                            window.location.reload();
+                        } else {
+                            applySummary(data);
+                        }
+                    }, 220);
+                    showToast("Mahsulot savatdan o'chirildi.");
+                })
+                .catch(function () {
+                    item.classList.remove('is-removing');
+                    showToast("Xatolik yuz berdi, qayta urinib ko'ring.");
+                });
+        }
+
+        cartPage.addEventListener('click', function (event) {
+            const stepBtn = event.target.closest('.qty-btn');
+            if (stepBtn) {
+                const item = stepBtn.closest('.cart-item');
+                const input = item.querySelector('.qty-input');
+                const current = parseInt(input.value, 10) || 1;
+                const delta = stepBtn.dataset.action === 'inc' ? 1 : -1;
+                updateQuantity(item, current + delta);
+                return;
+            }
+            const removeBtn = event.target.closest('.cart-item-remove');
+            if (removeBtn) {
+                removeItem(removeBtn.closest('.cart-item'));
+            }
+        });
+
+        cartPage.querySelectorAll('.qty-input').forEach(function (input) {
+            input.addEventListener('change', function () {
+                const item = input.closest('.cart-item');
+                const value = parseInt(input.value, 10);
+                updateQuantity(item, isNaN(value) ? 1 : value);
+            });
+        });
+    }
 
     const savedAddressSelect = document.getElementById('id_saved_address');
     if (savedAddressSelect) {

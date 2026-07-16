@@ -26,12 +26,31 @@
             {% endif %}
             <span class="price-current">{{ product.price|money }} so'm</span>
         </div>
-        <form action="{% url 'cart:add' product_id=product.id %}" method="post" class="product-card-form ajax-add-to-cart-form">
-            {% csrf_token %}
-            <input type="hidden" name="quantity" value="1">
-            <button type="submit" class="btn btn-primary" {% if not product.in_stock %}disabled{% endif %}>
-                Savatga qo'shish
-            </button>
-        </form>
+        <div class="product-card-cart"
+             data-product-id="{{ product.id }}"
+             data-stock="{{ product.stock }}"
+             data-update-url="{% url 'cart:update' product_id=product.id %}"
+             data-remove-url="{% url 'cart:remove' product_id=product.id %}">
+            <form action="{% url 'cart:add' product_id=product.id %}" method="post"
+                  class="product-card-form ajax-add-to-cart-form"
+                  {% if product.id in cart_quantities %}hidden{% endif %}>
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-primary add-to-cart-btn" {% if not product.in_stock %}disabled{% endif %}>
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span>Savatga qo'shish</span>
+                </button>
+            </form>
+            <div class="qty-stepper product-card-stepper" data-loading="false"
+                 {% if product.id not in cart_quantities %}hidden{% endif %}>
+                <button type="button" class="qty-btn" data-action="dec" aria-label="Kamaytirish yoki o'chirish">&minus;</button>
+                <input type="text" inputmode="numeric" class="qty-input" value="{{ cart_quantities|dict_get:product.id|default:1 }}" aria-label="Miqdor">
+                <button type="button" class="qty-btn" data-action="inc" aria-label="Ko'paytirish">+</button>
+            </div>
+        </div>
     </div>
 </article>

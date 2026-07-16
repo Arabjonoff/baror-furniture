@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,6 +11,29 @@ from .cart import Cart
 
 def _is_ajax(request):
     return request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+
+def _money_int(value):
+    """Summani butun songa aylantiradi (money filtri bilan bir xil ko'rinish uchun)."""
+    try:
+        return int(round(float(value)))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _summary_payload(request, cart):
+    """Savat yig'indisi (chegirma bilan) — AJAX javoblari uchun."""
+    from orders.promo import promo_context
+
+    subtotal = cart.get_total_price()
+    ctx = promo_context(request, subtotal)
+    return {
+        'cart_count': len(cart),
+        'subtotal': _money_int(subtotal),
+        'discount': _money_int(ctx['discount']),
+        'final_total': _money_int(ctx['final_total']),
+        'promo_code': ctx['promo'].code if ctx['promo'] else '',
+    }
 
 
 def cart_detail(request):
@@ -84,10 +109,12 @@ def cart_add(request, product_id):
     message = f'"{product.name}" savatga qo\'shildi.'
 
     if _is_ajax(request):
+        item = cart.cart.get(Cart._make_key(product.id, color))
         return JsonResponse({
             'ok': True,
             'cart_count': len(cart),
             'cart_total': str(cart.get_total_price()),
+            'item_quantity': item['quantity'] if item else quantity,
             'message': message,
         })
 
@@ -104,7 +131,9 @@ def cart_remove(request, product_id):
     cart.remove(product, color=color)
 
     if _is_ajax(request):
-        return JsonResponse({'ok': True, 'cart_count': len(cart), 'cart_total': str(cart.get_total_price())})
+        payload = {'ok': True, 'removed': True, 'empty': len(cart) == 0}
+        payload.update(_summary_payload(request, cart))
+        return JsonResponse(payload)
 
     messages.success(request, "Mahsulot savatdan o'chirildi.")
     return redirect('cart:detail')
@@ -127,6 +156,13 @@ def cart_update(request, product_id):
     cart.update(product, quantity, color=color)
 
     if _is_ajax(request):
-        return JsonResponse({'ok': True, 'cart_count': len(cart), 'cart_total': str(cart.get_total_price())})
+        payload = {'ok': True}
+        key = Cart._make_key(product.id, color)
+        item = cart.cart.get(key)
+        if item:
+            payload['quantity'] = item['quantity']
+            payload['item_total'] = _money_int(Decimal(item['price']) * item['quantity'])
+        payload.update(_summary_payload(request, cart))
+        return JsonResponse(payload)
 
     return redirect('cart:detail')

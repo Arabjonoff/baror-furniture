@@ -205,6 +205,27 @@ To'liq promokod tizimi:
 - **Order** modeliga `promo_code`, `discount` maydonlari va `subtotal` property qo'shildi. Checkout va tasdiqlash sahifalari chegirmani ko'rsatadi.
 - **Admin** — `PromoCodeAdmin` (kod, chegirma, limit, foydalanilgan soni; `fieldsets` bilan). CSS: savat/checkout summasi kartochka ko'rinishida, `.btn-secondary`, promokod formasi uslublari.
 
+### Bosqich 24 — Savat sahifasi UI/UX qayta dizayn
+
+Eski oddiy jadval (har o'zgarishda butun sahifa qayta yuklanardi) zamonaviy dizaynga almashtirildi:
+- **Ikki ustunli tartib** — chapda mahsulot kartochkalari, o'ngda **yopishib turuvchi (sticky)** buyurtma xulosasi.
+- Har mahsulot: rasm eskizi, nomi, rang chipi, **dumaloq miqdor stepperi (− soni +)**, qator jami + dona narxi, savatcha ikonkasi bilan o'chirish.
+- **To'liq AJAX** — miqdor o'zgarishi va o'chirish sahifani yangilamaydi; qator jami, chegirma va yakuniy summa jonli hisoblanadi (server `_summary_payload` qaytaradi). O'chirilgan kartochka silliq surilib yo'qoladi.
+- Xulosada promokod (yashil banner), Mahsulotlar/Chegirma/Yetkazib berish/Jami qatorlari, "Buyurtmani rasmiylashtirish", ishonch belgilari.
+- `cart/views.py` AJAX javoblari boyitildi (`item_total`, `subtotal`, `discount`, `final_total`, `quantity`, `empty`). Yangi JS savat moduli, yangi CSS.
+- **Muhim CSS saboq:** `.cart-total-line{display:flex}` HTML `hidden` atributini bosib ketardi — `.cart-total-line[hidden]{display:none}` qo'shildi.
+
+### Bosqich 25 — Mahsulot kartochkasi (savatga qo'shish → miqdor stepperi)
+
+Kartochka zamonaviylashtirildi va **savatga qo'shgandan keyin +/- va soni kartada ko'rinadi**:
+- "Savatga qo'shish" tugmasi (savatcha ikonkasi bilan) bosilgach **AJAX** orqali miqdor stepperiga aylanadi — sahifa yangilanmaydi.
+- **+** oshiradi, **−** kamaytiradi; **1 dan pastga tushsa** mahsulot savatdan chiqadi va yana "Savatga qo'shish" tugmasiga qaytadi. Stokdan oshib bo'lmaydi.
+- Boshlang'ich holat serverdan render qilinadi: `cart.context_processors` endi `cart_quantities` ({product_id: miqdor}, rangsiz yozuvlar) beradi; savatda bo'lgan mahsulot kartochkasi darhol stepper ko'rsatadi (reload'дан keyin ham).
+- Header savat soni har amalda jonli yangilanadi. Yangi `dict_get` shablon filtri, `cart_add` javobiga `item_quantity` qo'shildi.
+- Kartaning burchagi yumaloqlashtirildi (`--radius-lg`), hover soyasi kuchaytirildi. Stepper uslublari savat sahifasi bilan bir xil (`.qty-stepper`).
+- **Diqqat:** `.product-card-cart [hidden]{display:none !important}` — aks holda `.qty-stepper{display:flex}` `[hidden]`ni yengib, tugma va stepper birga chiqib qolardi.
+- **Flexbox saboq:** stepper ichidagi `<input>`ning standart `min-width:auto` qiymati uni ichki kengligidan kichraytirmasdi va **`+` tugmasi karta chetidan chiqib ketardi**. `.product-card-stepper .qty-input`ga `min-width:0` qo'shildi — endi input to'g'ri kichrayadi, `+` doim ko'rinadi.
+
 ## Test/kirish ma'lumotlari
 
 - **Admin panel:** `http://127.0.0.1:8000/admin/`

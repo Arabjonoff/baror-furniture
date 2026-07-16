@@ -4,83 +4,120 @@
 {% block title %}Savat — Barormebel{% endblock %}
 
 {% block content %}
-<h1>Savat</h1>
+<div class="cart-page" id="cartPage">
+    {% csrf_token %}
+    <div class="cart-page-head">
+        <h1 class="cart-title">Savatingiz</h1>
+        <span class="cart-count-badge"><span id="cartItemsCount">{{ cart|length }}</span> ta mahsulot</span>
+    </div>
 
-{% if cart|length > 0 %}
-    <table class="cart-table">
-        <thead>
-            <tr>
-                <th>Mahsulot</th>
-                <th>Rang</th>
-                <th>Narx</th>
-                <th>Miqdor</th>
-                <th>Jami</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
+    {% if cart|length > 0 %}
+    <div class="cart-grid">
+        <!-- Mahsulotlar ro'yxati -->
+        <div class="cart-items" id="cartItems">
             {% for item in cart %}
-                <tr>
-                    <td class="cart-product-cell">
-                        <a href="{% url 'catalog:product_detail' slug=item.product.slug %}">
-                            {% with main_image=item.product.images.first %}
-                                {% if main_image %}
-                                    <img src="{{ main_image.image.url }}" alt="{{ item.product.name }}">
-                                {% endif %}
-                            {% endwith %}
-                            <span>{{ item.product.name }}</span>
-                        </a>
-                    </td>
-                    <td>{{ item.color|default:"—" }}</td>
-                    <td>{{ item.price|money }} so'm</td>
-                    <td>
-                        <form action="{% url 'cart:update' product_id=item.product.id %}" method="post" class="cart-quantity-form">
-                            {% csrf_token %}
-                            {% if item.color %}<input type="hidden" name="color" value="{{ item.color }}">{% endif %}
-                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}">
-                            <button type="submit" class="btn-small">Yangilash</button>
-                        </form>
-                    </td>
-                    <td>{{ item.total_price|money }} so'm</td>
-                    <td>
-                        <form action="{% url 'cart:remove' product_id=item.product.id %}" method="post">
-                            {% csrf_token %}
-                            {% if item.color %}<input type="hidden" name="color" value="{{ item.color }}">{% endif %}
-                            <button type="submit" class="btn-remove">O'chirish</button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            <article class="cart-item"
+                     data-product-id="{{ item.product.id }}"
+                     data-color="{{ item.color }}"
+                     data-stock="{{ item.product.stock }}"
+                     data-update-url="{% url 'cart:update' product_id=item.product.id %}"
+                     data-remove-url="{% url 'cart:remove' product_id=item.product.id %}">
+                <a class="cart-item-media" href="{% url 'catalog:product_detail' slug=item.product.slug %}">
+                    {% with main_image=item.product.images.first %}
+                        {% if main_image %}
+                            <img src="{{ main_image.image.url }}" alt="{{ item.product.name }}" loading="lazy">
+                        {% else %}
+                            <span class="cart-item-noimg">🛋️</span>
+                        {% endif %}
+                    {% endwith %}
+                </a>
 
-    <div class="cart-summary">
-        <div class="cart-promo">
-            {% if promo %}
-                <div class="cart-promo-applied">
-                    <span>Promokod <strong>{{ promo.code }}</strong> qo'llanildi</span>
-                    <form action="{% url 'cart:remove_promo' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-remove">Olib tashlash</button>
-                    </form>
+                <div class="cart-item-body">
+                    <div class="cart-item-top">
+                        <div>
+                            <a class="cart-item-name" href="{% url 'catalog:product_detail' slug=item.product.slug %}">{{ item.product.name }}</a>
+                            {% if item.color %}<span class="cart-item-color">{{ item.color }}</span>{% endif %}
+                        </div>
+                        <button type="button" class="cart-item-remove" aria-label="O'chirish" title="O'chirish">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="cart-item-bottom">
+                        <div class="qty-stepper" data-loading="false">
+                            <button type="button" class="qty-btn" data-action="dec" aria-label="Kamaytirish">&minus;</button>
+                            <input type="text" inputmode="numeric" class="qty-input" value="{{ item.quantity }}" aria-label="Miqdor">
+                            <button type="button" class="qty-btn" data-action="inc" aria-label="Ko'paytirish">+</button>
+                        </div>
+                        <div class="cart-item-pricing">
+                            <span class="cart-item-total">{{ item.total_price|money }} so'm</span>
+                            <span class="cart-item-unit">{{ item.price|money }} so'm / dona</span>
+                        </div>
+                    </div>
                 </div>
-            {% else %}
-                <form action="{% url 'cart:apply_promo' %}" method="post" class="cart-promo-form">
-                    {% csrf_token %}
-                    <input type="text" name="code" placeholder="Promokod" value="{{ request.GET.code }}">
-                    <button type="submit" class="btn btn-secondary">Qo'llash</button>
-                </form>
-            {% endif %}
+            </article>
+            {% endfor %}
         </div>
 
-        <p class="cart-total-line">Mahsulotlar: <span>{{ cart.get_total_price|money }} so'm</span></p>
-        {% if discount %}
-            <p class="cart-total-line cart-discount-line">Chegirma: <span>&minus;{{ discount|money }} so'm</span></p>
-        {% endif %}
-        <p class="cart-total">Jami: <strong>{{ final_total|money }} so'm</strong></p>
-        <a href="{% url 'orders:checkout' %}" class="btn btn-primary cart-checkout">Buyurtma berish</a>
+        <!-- Buyurtma xulosasi -->
+        <aside class="cart-summary" id="cartSummary">
+            <h2 class="cart-summary-title">Buyurtma xulosasi</h2>
+
+            <div class="cart-promo">
+                {% if promo %}
+                    <div class="cart-promo-applied">
+                        <div class="cart-promo-info">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"></path><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                            <span>Promokod <strong>{{ promo.code }}</strong></span>
+                        </div>
+                        <form action="{% url 'cart:remove_promo' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="cart-promo-clear" aria-label="Promokodni olib tashlash">&times;</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <form action="{% url 'cart:apply_promo' %}" method="post" class="cart-promo-form">
+                        {% csrf_token %}
+                        <input type="text" name="code" placeholder="Promokod kiriting" value="{{ request.GET.code }}">
+                        <button type="submit" class="btn btn-secondary">Qo'llash</button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <div class="cart-summary-lines">
+                <p class="cart-total-line">
+                    <span>Mahsulotlar</span>
+                    <span id="cartSubtotal">{{ cart.get_total_price|money }} so'm</span>
+                </p>
+                <p class="cart-total-line cart-discount-line" id="cartDiscountLine" {% if not discount %}hidden{% endif %}>
+                    <span>Chegirma</span>
+                    <span>&minus;<span id="cartDiscount">{{ discount|money }}</span> so'm</span>
+                </p>
+                <p class="cart-total-line cart-delivery-line">
+                    <span>Yetkazib berish</span>
+                    <span class="cart-free">Buyurtmada aniqlanadi</span>
+                </p>
+            </div>
+
+            <p class="cart-total">
+                <span>Jami</span>
+                <strong><span id="cartFinalTotal">{{ final_total|money }}</span> so'm</strong>
+            </p>
+
+            <a href="{% url 'orders:checkout' %}" class="btn btn-primary cart-checkout">Buyurtmani rasmiylashtirish</a>
+            <a href="{% url 'catalog:product_list' %}" class="cart-continue">← Xaridni davom ettirish</a>
+
+            <div class="cart-trust">
+                <span>🔒 Xavfsiz buyurtma</span>
+                <span>🚚 O'zbekiston bo'ylab yetkazib berish</span>
+            </div>
+        </aside>
     </div>
-{% else %}
+    {% else %}
     <div class="empty-state">
         <svg class="empty-state-icon" viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.5">
             <circle cx="9" cy="21" r="1"></circle>
@@ -91,5 +128,6 @@
         <p class="empty-state-text">Katalogdan yoqtirgan mebellaringizni tanlab, savatga qo'shing.</p>
         <a href="{% url 'catalog:product_list' %}" class="btn btn-primary">Xarid qilishni boshlash</a>
     </div>
-{% endif %}
+    {% endif %}
+</div>
 {% endblock %}
