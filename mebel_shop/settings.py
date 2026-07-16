@@ -153,3 +153,25 @@ AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'catalog:home'
 LOGOUT_REDIRECT_URL = 'catalog:home'
+
+
+# CSRF ishonchli manbalar (HTTPS domenlari) — forma yuborish uchun zarur
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='https://barormebel.uz,https://www.barormebel.uz',
+    cast=Csv(),
+)
+
+# Production xavfsizlik sozlamalari — faqat DEBUG=False bo'lganda yoqiladi.
+# Sayt nginx orqasida ishlaydi (nginx HTTPS'ni tugatadi).
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # HTTP -> HTTPS yo'naltirishni nginx (certbot) bajaradi; kerak bo'lsa .env orqali yoqing
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 2592000  # 30 kun
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'

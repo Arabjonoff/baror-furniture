@@ -1,0 +1,20 @@
+[Unit]
+Description=Barormebel — Django (gunicorn)
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=barormebel
+Group=barormebel
+WorkingDirectory=/home/barormebel/barormebel
+Environment=DJANGO_SETTINGS_MODULE=mebel_shop.settings
+ExecStart=/home/barormebel/barormebel/venv/bin/gunicorn mebel_shop.wsgi:application \
+    --config /home/barormebel/barormebel/deploy/gunicorn.conf.py
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=3
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target

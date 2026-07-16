@@ -226,6 +226,22 @@ Kartochka zamonaviylashtirildi va **savatga qo'shgandan keyin +/- va soni kartad
 - **Diqqat:** `.product-card-cart [hidden]{display:none !important}` — aks holda `.qty-stepper{display:flex}` `[hidden]`ni yengib, tugma va stepper birga chiqib qolardi.
 - **Flexbox saboq:** stepper ichidagi `<input>`ning standart `min-width:auto` qiymati uni ichki kengligidan kichraytirmasdi va **`+` tugmasi karta chetidan chiqib ketardi**. `.product-card-stepper .qty-input`ga `min-width:0` qo'shildi — endi input to'g'ri kichrayadi, `+` doim ko'rinadi.
 
+### Bosqich 26 — Serverga joylashtirish (deployment) + CI/CD
+
+Loyiha production'ga tayyorlandi. Stek: **gunicorn + systemd + nginx + PostgreSQL + Let's Encrypt (HTTPS)**, domen **barormebel.uz**. To'liq yo'riqnoma: `DEPLOYMENT.md`.
+
+- **Production sozlamalari** (`settings.py`) — `DEBUG=False` bo'lganda: `SECURE_PROXY_SSL_HEADER` (nginx orqasida), secure cookie'lar, HSTS, `X_FRAME_OPTIONS`, `SECURE_CONTENT_TYPE_NOSNIFF`. `CSRF_TRUSTED_ORIGINS` env orqali.
+- **`requirements.txt`** — `gunicorn` qo'shildi. **`.env.example`** production izohlari bilan yangilandi (PostgreSQL, CSRF).
+- **`deploy/`** papkasi:
+  - `bootstrap.sh` — serverni **bir marta** tayyorlaydi (paketlar, `barormebel` user, PostgreSQL baza, repo, venv, `.env` avtomatik SECRET_KEY, migrate, collectstatic, systemd, nginx, certbot HTTPS)
+  - `deploy.sh` — har relizda: `git pull → pip install → migrate → collectstatic → systemctl restart`
+  - `barormebel.service` (systemd/gunicorn), `nginx-barormebel.conf`, `gunicorn.conf.py`
+- **CI/CD** (`.github/workflows/`):
+  - `ci.yml` — har push/PR: `check`, `makemigrations --check`, `migrate`, `test` (SQLite)
+  - `deploy.yml` — CI muvaffaqiyatli tugagach `main`'да serverga SSH (appleboy/ssh-action) orqali `deploy.sh` chaqiradi. Secretlar: `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_PORT`.
+- **`.gitattributes`** — `.sh` va `deploy/*` fayllar doim **LF** (Windows CRLF Linux skriptlarini buzadi).
+- **Xavfsizlik qarori:** root parol kodда/CI'да saqlanmaydi — deploy SSH kalitlari + GitHub Secrets orqali. Serverni root talab qiladigan bir martalik `bootstrap.sh` ni foydalanuvchi o'zi ishga tushiradi.
+
 ## Test/kirish ma'lumotlari
 
 - **Admin panel:** `http://127.0.0.1:8000/admin/`

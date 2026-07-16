@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: ci-not-secret
+      DEBUG: "True"
+      USE_SQLITE: "True"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python o'rnatish
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Kutubxonalar
+        run: pip install -r requirements.txt
+
+      - name: Django tekshiruvi (check)
+        run: python manage.py check
+
+      - name: Migratsiyalar to'liqligi
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Migratsiya + testlar
+        run: |
+          python manage.py migrate
+          python manage.py test

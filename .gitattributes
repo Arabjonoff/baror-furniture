@@ -1,0 +1,3 @@
+# Shell skriptlar Linux serverda ishlaydi — doim LF satr oxiri (CRLF ularni buzadi)
+*.sh text eol=lf
+deploy/* text eol=lf
