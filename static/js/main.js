@@ -15,11 +15,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 2500);
     }
 
-    function updateCartCount(count) {
-        const cartCountEl = document.getElementById('cart-count');
-        if (cartCountEl) {
-            cartCountEl.textContent = count;
+    function setNavBadge(el, count) {
+        if (!el) {
+            return;
         }
+        el.textContent = count;
+        el.hidden = !count || Number(count) === 0;
+    }
+
+    function updateCartCount(count) {
+        setNavBadge(document.getElementById('cart-count'), count);
     }
 
     function getCsrfToken(scope) {
@@ -168,10 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (!data.ok) {
                         return;
                     }
-                    const wishlistCountEl = document.getElementById('wishlist-count');
-                    if (wishlistCountEl) {
-                        wishlistCountEl.textContent = data.wishlist_count;
-                    }
+                    setNavBadge(document.getElementById('wishlist-count'), data.wishlist_count);
                     if (button) {
                         button.classList.toggle('is-active', data.added);
                         button.setAttribute('aria-pressed', data.added ? 'true' : 'false');

@@ -118,6 +118,32 @@ def checkout_view(request):
     return render(request, 'orders/checkout.html', context)
 
 
+# Buyurtma holati bo'ylab jarayon qadamlari (bekor qilingan alohida ko'rsatiladi)
+STATUS_FLOW = [
+    Order.STATUS_NEW,
+    Order.STATUS_CONFIRMED,
+    Order.STATUS_SHIPPING,
+    Order.STATUS_DELIVERED,
+]
+
+
+def build_status_steps(order):
+    """Detail sahifadagi timeline uchun qadamlar ro'yxati (bajarilgan/joriy belgilari bilan)."""
+    labels = dict(Order.STATUS_CHOICES)
+    if order.status == Order.STATUS_CANCELLED:
+        current_index = -1
+    else:
+        current_index = STATUS_FLOW.index(order.status)
+    steps = []
+    for i, status in enumerate(STATUS_FLOW):
+        steps.append({
+            'label': labels[status],
+            'done': current_index >= 0 and i < current_index,
+            'current': i == current_index,
+        })
+    return steps
+
+
 def order_confirmation_view(request, order_id):
     """Buyurtma tasdiqlash sahifasi — buyurtma raqami va tafsilotlari."""
     order = get_object_or_404(Order, pk=order_id)
@@ -127,7 +153,7 @@ def order_confirmation_view(request, order_id):
 @login_required
 def order_list_view(request):
     """Tizimga kirgan foydalanuvchining buyurtmalari tarixi."""
-    orders = request.user.orders.all()
+    orders = request.user.orders.prefetch_related('items__product__images').all()
     return render(request, 'orders/list.html', {'orders': orders})
 
 
@@ -135,4 +161,9 @@ def order_list_view(request):
 def order_detail_view(request, order_id):
     """Foydalanuvchining o'z buyurtmasi tafsilotlari."""
     order = get_object_or_404(Order, pk=order_id, user=request.user)
-    return render(request, 'orders/confirmation.html', {'order': order})
+    context = {
+        'order': order,
+        'status_steps': build_status_steps(order),
+        'is_cancelled': order.status == Order.STATUS_CANCELLED,
+    }
+    return render(request, 'orders/detail.html', context)
