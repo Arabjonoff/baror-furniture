@@ -10,67 +10,112 @@
 {% block content %}
 <div class="catalog-layout">
     <aside class="filter-panel">
-        <form method="get" class="filter-form">
-            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        <details class="filter-details" open>
+            <summary class="filter-mobile-toggle">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="6" x2="20" y2="6"></line>
+                    <line x1="7" y1="12" x2="17" y2="12"></line>
+                    <line x1="10" y1="18" x2="14" y2="18"></line>
+                </svg>
+                <span>Filtrlar</span>
+                <svg class="filter-toggle-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </summary>
 
-            <h3>Kategoriyalar</h3>
-            <ul class="filter-category-list">
-                <li><a href="{% url 'catalog:product_list' %}" {% if not category %}class="active"{% endif %}>Barchasi</a></li>
-                {% for cat in categories %}
-                    <li>
-                        <a href="{% url 'catalog:product_list_by_category' category_slug=cat.slug %}"
-                           {% if category and category.slug == cat.slug %}class="active"{% endif %}>
-                            {{ cat.name }}
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
+            <form method="get" class="filter-form">
+                {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
 
-            <h3>Narx oralig'i</h3>
-            <div class="filter-price-range">
-                <input type="number" name="price_min" placeholder="Dan" value="{{ price_min }}" min="0">
-                <input type="number" name="price_max" placeholder="Gacha" value="{{ price_max }}" min="0">
-            </div>
+                <div class="filter-head">
+                    <h2 class="filter-title">Filtrlar</h2>
+                    <a href="{% if category %}{% url 'catalog:product_list_by_category' category_slug=category.slug %}{% else %}{% url 'catalog:product_list' %}{% endif %}{% if query %}?q={{ query }}{% endif %}" class="filter-reset">Tozalash</a>
+                </div>
 
-            <h3>Material</h3>
-            <select name="material">
-                <option value="">Barchasi</option>
-                {% for m in materials %}
-                    <option value="{{ m.slug }}" {% if m.slug == selected_material %}selected{% endif %}>{{ m.name }}</option>
-                {% endfor %}
-            </select>
+                <div class="filter-group">
+                    <span class="filter-label">Kategoriyalar</span>
+                    <ul class="filter-category-list">
+                        <li><a href="{% url 'catalog:product_list' %}" {% if not category %}class="active"{% endif %}>Barchasi</a></li>
+                        {% for cat in categories %}
+                            <li>
+                                <a href="{% url 'catalog:product_list_by_category' category_slug=cat.slug %}"
+                                   {% if category and category.slug == cat.slug %}class="active"{% endif %}>
+                                    {{ cat.name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
 
-            <h3>Xona turi</h3>
-            <select name="room_type">
-                <option value="">Barchasi</option>
-                {% for rt in room_types %}
-                    <option value="{{ rt.slug }}" {% if rt.slug == selected_room_type %}selected{% endif %}>{{ rt.name }}</option>
-                {% endfor %}
-            </select>
+                <div class="filter-group">
+                    <span class="filter-label">Narx oralig'i (so'm)</span>
+                    <div class="filter-price-range">
+                        <input type="number" name="price_min" placeholder="Dan" value="{{ price_min }}" min="0" inputmode="numeric">
+                        <span class="filter-price-sep">–</span>
+                        <input type="number" name="price_max" placeholder="Gacha" value="{{ price_max }}" min="0" inputmode="numeric">
+                    </div>
+                </div>
 
-            <h3>Rang</h3>
-            <select name="color">
-                <option value="">Barchasi</option>
-                {% for color_name in colors %}
-                    <option value="{{ color_name }}" {% if color_name == selected_color %}selected{% endif %}>{{ color_name }}</option>
-                {% endfor %}
-            </select>
+                <div class="filter-group">
+                    <span class="filter-label">Material</span>
+                    <div class="filter-select-wrap">
+                        <select name="material">
+                            <option value="">Barchasi</option>
+                            {% for m in materials %}
+                                <option value="{{ m.slug }}" {% if m.slug == selected_material %}selected{% endif %}>{{ m.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
 
-            <h3>Saralash</h3>
-            <select name="sort">
-                <option value="yangi" {% if selected_sort == "yangi" %}selected{% endif %}>Yangi</option>
-                <option value="ommabop" {% if selected_sort == "ommabop" %}selected{% endif %}>Ommabop</option>
-                <option value="narx_osish" {% if selected_sort == "narx_osish" %}selected{% endif %}>Narx: arzondan qimmatga</option>
-                <option value="narx_kamayish" {% if selected_sort == "narx_kamayish" %}selected{% endif %}>Narx: qimmatdan arzonga</option>
-            </select>
+                <div class="filter-group">
+                    <span class="filter-label">Xona turi</span>
+                    <div class="filter-select-wrap">
+                        <select name="room_type">
+                            <option value="">Barchasi</option>
+                            {% for rt in room_types %}
+                                <option value="{{ rt.slug }}" {% if rt.slug == selected_room_type %}selected{% endif %}>{{ rt.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
 
-            <label class="filter-checkbox">
-                <input type="checkbox" name="available" value="1" {% if available_only %}checked{% endif %}>
-                Faqat mavjud mahsulotlar
-            </label>
+                <div class="filter-group">
+                    <span class="filter-label">Rang</span>
+                    <div class="filter-select-wrap">
+                        <select name="color">
+                            <option value="">Barchasi</option>
+                            {% for color_name in colors %}
+                                <option value="{{ color_name }}" {% if color_name == selected_color %}selected{% endif %}>{{ color_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
 
-            <button type="submit" class="btn btn-primary filter-submit">Filtrlash</button>
-        </form>
+                <div class="filter-group">
+                    <span class="filter-label">Saralash</span>
+                    <div class="filter-select-wrap">
+                        <select name="sort">
+                            <option value="yangi" {% if selected_sort == "yangi" %}selected{% endif %}>Yangi</option>
+                            <option value="ommabop" {% if selected_sort == "ommabop" %}selected{% endif %}>Ommabop</option>
+                            <option value="narx_osish" {% if selected_sort == "narx_osish" %}selected{% endif %}>Narx: arzondan qimmatga</option>
+                            <option value="narx_kamayish" {% if selected_sort == "narx_kamayish" %}selected{% endif %}>Narx: qimmatdan arzonga</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-group filter-group-switch">
+                    <label class="switch-row filter-switch-row">
+                        <span>Faqat mavjud mahsulotlar</span>
+                        <span class="switch">
+                            <input type="checkbox" name="available" value="1" {% if available_only %}checked{% endif %}>
+                            <span class="switch-slider"></span>
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary filter-submit">Filtrlash</button>
+            </form>
+        </details>
     </aside>
 
     <div class="catalog-content">
@@ -110,4 +155,18 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    // Mobil ekranda filter panelini dastlab yig'iq holatda ko'rsatish
+    (function () {
+        var details = document.querySelector('.filter-details');
+        if (!details) return;
+        var mq = window.matchMedia('(max-width: 900px)');
+        function sync() {
+            details.open = !mq.matches;
+        }
+        sync();
+        (mq.addEventListener ? mq.addEventListener('change', sync) : mq.addListener(sync));
+    })();
+</script>
 {% endblock %}

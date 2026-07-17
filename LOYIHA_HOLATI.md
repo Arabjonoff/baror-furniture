@@ -260,6 +260,36 @@ Loyiha **https://barormebel.uz** da jonli ishlaydi. Server: Ubuntu VPS (`5.104.1
 
 > **Eslatma:** root parolini almashtirish tavsiya etilgan (sozlash paytida oshkor bo'lgan).
 
+### Bosqich 28 — UI/UX zamonaviylashtirish to'lqini (kategoriyalar, buyurtmalar, navbar, shrift, profil) ✅
+
+Bir necha bo'lim "eski sayt" ko'rinishidan zamonaviy dizaynga o'tkazildi. Barchasi jonli (`main`'ga push → CI/CD → https://barormebel.uz). Commit: `40ec75a`.
+
+1. **Bosh sahifa — Kategoriyalar overlay dizayn.** Oddiy oq karta (kichik rasm + matn) o'rniga to'liq rasmli karta: rasm ustida gradient, nom oq harflar bilan pastda, hover'da rasm zoom (1.07x) + oq dumaloq strelka tugmasi chiqadi. Rasmsiz kategoriya — brend gradient fon + divan SVG ikonkasi. Sarlavha yoniga tavsif va "Barcha mahsulotlar →" havolasi (`.section-head`). Mobil: 2 ustun.
+
+2. **Buyurtmalar ro'yxati (`orders/list.html`).** Jadval o'rniga **kartalar**: rangli status badge (yangi=ko'k, tasdiqlangan=sariq, yolda=binafsha, yetkazildi=yashil, bekor=qizil), sana + mahsulot soni (ikonka), mahsulot **eskizlari** (4 tagacha, +N), o'ngda jami + "Batafsil". `prefetch_related` bilan N+1 oldini olindi.
+
+3. **Buyurtma detali — alohida `orders/detail.html`.** Ilgari `confirmation.html`ni qayta ishlatib "Buyurtmangiz qabul qilindi!" deb **noto'g'ri** ko'rsatardi. Endi: **status timeline** (Yangi→Tasdiqlangan→Yo'lda→Yetkazildi, bajarilganlar yashil ✓, joriysi jigarrang; bekorda qizil banner), ikki info kartasi (yetkazish/to'lov, badge bilan), eskizli mahsulot ro'yxati, xulosa kartasi. View'ga `build_status_steps()` yordamchisi qo'shildi. `confirmation.html` ham success hero bilan izchil ko'rinishga keltirildi.
+
+4. **Navbar — "Sevimlilar (0)" / "Savat (0)" qavsli sonlar → ikonka + badge.** Yurakcha va savat SVG ikonkalari, soni yuqori-o'ng burchakda dumaloq badge (sevimli=jigarrang, savat=to'q sariq). **0 bo'lganda badge yashirinadi** (`hidden` atributi + JS `setNavBadge()`). Desktop: faqat ikonka; mobil menyu: ikonka + matn. `#cart-count`/`#wishlist-count` ID'lari saqlandi.
+
+5. **Shrift: Georgia/Segoe UI → SF Pro (San Francisco).** `--font-body` va `--font-heading` Apple tizim shrift stekiga o'tkazildi (`-apple-system, BlinkMacSystemFont, "SF Pro Text/Display", ...`). Sarlavhalar endi serif emas, sans-serif (`letter-spacing: -0.02em`). `dashboard.css` ham. **Muhim:** SF Pro faqat Apple qurilmalarida native; Windows/Android'da fallback (Segoe UI/Roboto). Hamma joyda bir xil kerak bo'lsa — **Inter** shriftini self-host qilish tavsiya (SF Pro'ga o'xshash, ochiq litsenziya).
+
+6. **Profil (`accounts/profile.html`) — emoji va oddiy input'lardan zamonaviy dizaynga.** Barcha **emoji → SVG ikonka** (🎁→gradient badge ichida sovg'a, 🔑/↩→qulf/chiqish, sarlavhalarga 👤📍🔔👁). **Bildirishnoma checkbox'lari → iOS toggle switch** (`.switch`/`.switch-slider`, `:checked + .switch-slider`). Manzil "Tahrirlash/O'chirish" matnlari → ikonka tugmalar (qalam/savat, hover'da rangli); "Asosiy" badge sarlavha yonida inline. Radiuslar dizayn tizimiga moslandi.
+
+> **CSS saboq (toggle switch):** `input`ni ko'rinmas qilib (`opacity:0`, ustma-ust) `.switch-slider` bilan yonma-yon qo'yiladi, `input:checked + .switch-slider` orqali surma boshqariladi — input darhol slider'dan oldin turishi shart (`+` selektori uchun).
+
+### Bosqich 29 — Katalog filtri, mobil navbar va banner UI/UX ✅
+
+Uchta bo'lim mobil va umumiy UX bo'yicha zamonaviylashtirildi (faqat template + CSS + JS, model/migratsiya yo'q).
+
+1. **Katalog yon filtri (`catalog/product_list.html`).** Eski kichik/tor filtr zamonaviy kartaga aylandi: yumaloq oq karta (`--radius-lg` + soya), "Filtrlar" sarlavhasi + "Tozalash" havolasi, UPPERCASE bo'lim yorliqlari, kategoriyalar **pill tugma** (faol=brend fon), narx oralig'i "–" ajratuvchi bilan, **custom dropdown** (SVG chevron), "Faqat mavjud" → **iOS toggle switch**, to'liq kenglikdagi tugma. Kenglik 260→**340px**. **Mobilda** panel native `<details>` orqali "Filtrlar" tugmasiga yig'iladi (kichik JS ekran o'lchamiga qarab ochadi/yopadi).
+
+2. **Mobil navbar — slide-in drawer.** Menyu (Katalog, Buyurtmalarim, Boshqaruv, profil, Sevimlilar, Savat) o'ngdan siljib chiquvchi **drawer**ga aylandi (overlay + body scroll lock; ×/overlay/Esc/havola bosib yopiladi). Top-bar: **logo chapda, ☰ burger o'ngda**. Sevimli va Savat ikonlari **drawer ichida** (ikonka + matn, tepada). Desktopda ikonlar `order` bilan o'ng chetда. Fayllar: `base.html`, `main.js`, `style.css` (`.main-nav` drawer, `.nav-overlay`, `body.nav-lock`, `.nav-drawer-head/close`).
+
+3. **Bosh sahifa banner — mobil overlay.** Rasm `background-image`dan alohida **`.hero-slide-media`** elementga chiqarildi (desktop overlay o'zgarmadi). **Mobilda:** rasm background'da to'liq qoplaydi (`cover`), matn rasm **ustida** pastda, pastdan kuchli qoraytiruvchi gradient bilan o'qiladi; balandlik `min-height:400px`, sarlavha o'raladi, tugma to'liq kenglikda emas — inline. (Avval stacked yechim sinab ko'rildi, keyin foydalanuvchi so'roviga ko'ra overlay'ga qaytarildi.)
+
+> **CSS saboqlar (Bosqich 29):** (a) `.filter-select-wrap::after` + `appearance:none` — brauzer standart select strelkasini SVG chevron bilan almashtirish. (b) Mobil drawer uchun `.main-nav`ni `position:fixed; transform:translateX(100%)` qilib, `.is-open`da `translateX(0)`; overlay alohida `hidden` + `.is-open` bilan boshqariladi. (c) Banner rasm/matn ajralishi uchun rasm alohida qatlam bo'lishi kerak — background'da bo'lsa mobilda stacked/overlay'ni moslash oson.
+
 ## Test/kirish ma'lumotlari
 
 - **🌐 Jonli sayt (production):** https://barormebel.uz · Dashboard: https://barormebel.uz/boshqaruv/ · Admin: https://barormebel.uz/admin/
@@ -308,3 +338,6 @@ Foydalanuvchi tomonidan aytilgan, lekin hali amalga oshirilmagan:
 - **Django dev-server media serveri ishonchli** — Windows'da ham 200 qaytaradi; muammo odatda brauzer/kengaytma tomonida bo'ladi (Resource Timing `responseStatus`/`transferSize` bilan tekshiring).
 - **CSS: inline element'ga `width`/`height` qo'llanmaydi** — progress bar `.fill`ga `display:block` kerak bo'ldi (dashboard).
 - **Django admin custom User** — yangi maydon qo'shilganda `fieldsets`ni ham yangilash kerak.
+- **SF Pro shrift faqat Apple qurilmalarida native ko'rinadi** (Bosqich 28) — litsenziya boshqa platformalarda tarqatishni taqiqlaydi; universal kerak bo'lsa Inter'ni self-host qiling.
+- **Toggle switch: `input:checked + .switch-slider`** ishlashi uchun `input` darhol slider'dan oldin turishi shart (`+` qo'shni selektor); input `opacity:0` bilan ustma-ust yashiriladi (Bosqich 28).
+- **`.section-head` (sarlavha + o'ng havola) — takrorlanuvchi pattern** (kategoriyalar, buyurtmalar). Yangi ro'yxat bo'limlarida qayta ishlating.

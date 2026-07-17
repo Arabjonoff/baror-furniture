@@ -48,16 +48,12 @@
                 </button>
             </form>
 
-            <nav class="main-nav" id="mainNav">
-                <div class="nav-dropdown">
-                    <a href="{% url 'catalog:product_list' %}" class="nav-dropdown-toggle">Katalog</a>
-                    {% if nav_categories %}
-                        <div class="nav-dropdown-menu">
-                            {% for cat in nav_categories %}
-                                <a href="{% url 'catalog:product_list_by_category' category_slug=cat.slug %}">{{ cat.name }}</a>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+            <nav class="main-nav" id="mainNav" aria-label="Asosiy menyu">
+                <div class="nav-drawer-head">
+                    <span class="nav-drawer-title">Menyu</span>
+                    <button type="button" class="nav-drawer-close" id="navCloseBtn" aria-label="Menyuni yopish">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
                 </div>
                 <a href="{% url 'wishlist:detail' %}" class="nav-icon-link nav-wishlist" title="Sevimlilar" aria-label="Sevimlilar">
                     <span class="nav-icon-wrap">
@@ -73,16 +69,28 @@
                     </span>
                     <span class="nav-icon-text">Savat</span>
                 </a>
+                <div class="nav-dropdown">
+                    <a href="{% url 'catalog:product_list' %}" class="nav-dropdown-toggle">Katalog</a>
+                    {% if nav_categories %}
+                        <div class="nav-dropdown-menu">
+                            {% for cat in nav_categories %}
+                                <a href="{% url 'catalog:product_list_by_category' category_slug=cat.slug %}">{{ cat.name }}</a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
                 <a href="{% url 'orders:list' %}">Buyurtmalarim</a>
                 {% if user.is_staff %}
                     <a href="{% url 'dashboard:index' %}" class="nav-dashboard">Boshqaruv</a>
                 {% endif %}
                 {% if user.is_authenticated %}
-                    <a href="{% url 'accounts:profile' %}">{{ user.get_short_name }}</a>
+                    <a href="{% url 'accounts:profile' %}" class="nav-profile-link">{{ user.get_short_name }}</a>
                 {% else %}
-                    <a href="{% url 'accounts:login' %}">Kirish</a>
+                    <a href="{% url 'accounts:login' %}" class="nav-login-link">Kirish</a>
                 {% endif %}
             </nav>
+
+            <div class="nav-overlay" id="navOverlay" hidden></div>
         </div>
     </header>
 

@@ -167,6 +167,15 @@ a {
     color: var(--color-primary);
 }
 
+/* Drawer sarlavhasi va yopish tugmasi — faqat mobil drawerda ko'rinadi */
+.nav-drawer-head {
+    display: none;
+}
+
+.nav-overlay {
+    display: none;
+}
+
 /* Katalog dropdown menyu */
 .nav-dropdown {
     position: relative;
@@ -259,14 +268,7 @@ a {
     visibility: hidden;
     transition: opacity 0.6s ease;
     color: #fff;
-}
-
-.hero-slide::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba(20, 14, 8, 0.65) 0%, rgba(20, 14, 8, 0.25) 55%, rgba(20, 14, 8, 0) 100%);
-    z-index: 0;
+    overflow: hidden;
 }
 
 .hero-slide.is-active {
@@ -274,21 +276,22 @@ a {
     visibility: visible;
 }
 
-/* Rasmli banner: to'liq dizayn ko'rinsin — ustidagi qoraytiruvchi qatlam va matn olib tashlanadi */
-.hero-slide.has-image {
+/* Rasm qatlami (alohida element — mobil stacked layout uchun) */
+.hero-slide-media {
+    position: absolute;
+    inset: 0;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    z-index: 0;
 }
 
-/* Toza rasmli banner (matnsiz): qoraytiruvchi qatlam bo'lmaydi */
-.hero-slide.has-image::before {
-    display: none;
-}
-
-/* Rasm + matn: matn o'qilishi uchun qoraytiruvchi qatlam qaytadi */
-.hero-slide.has-image.has-content::before {
-    display: block;
+/* Rasm + matn: matn o'qilishi uchun qoraytiruvchi qatlam */
+.hero-slide.has-content .hero-slide-media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(20, 14, 8, 0.7) 0%, rgba(20, 14, 8, 0.3) 55%, rgba(20, 14, 8, 0) 100%);
 }
 
 .hero-slide-1 {
@@ -394,20 +397,64 @@ a {
 }
 
 @media (max-width: 600px) {
+    /* Mobil banner — rasm backgroundda, matn rasm ustida (overlay) */
+    .hero-slider {
+        border-radius: var(--radius);
+    }
+
     .hero-slides {
-        min-height: 320px;
+        aspect-ratio: auto;
+        min-height: 400px;
     }
 
     .hero-slide {
-        padding: 0 28px;
+        padding: 0;
+        align-items: flex-end; /* matn pastda */
+    }
+
+    /* Rasm butun bannerni qoplaydi */
+    .hero-slide-media {
+        background-size: cover;
+        background-position: center;
+    }
+
+    /* Matn o'qilishi uchun pastdan kuchli qoraytiruvchi gradient */
+    .hero-slide.has-content .hero-slide-media::after {
+        background: linear-gradient(to top, rgba(20, 14, 8, 0.88) 0%, rgba(20, 14, 8, 0.5) 42%, rgba(20, 14, 8, 0.08) 78%);
+    }
+
+    .hero-slide-content {
+        max-width: 100%;
+        padding: 24px 22px 30px;
+    }
+
+    .hero-eyebrow {
+        margin-bottom: 10px;
+        font-size: 0.72rem;
     }
 
     .hero-slide-content h1 {
         font-size: 1.5rem;
+        line-height: 1.3;
+        margin-bottom: 10px;
+        overflow-wrap: break-word;
+    }
+
+    .hero-slide-content p {
+        font-size: 0.92rem;
+        margin-bottom: 18px;
+    }
+
+    .hero-slide-content .btn {
+        display: inline-block;
     }
 
     .hero-arrow {
         display: none;
+    }
+
+    .hero-dots {
+        bottom: 14px;
     }
 }
 
@@ -834,26 +881,74 @@ a {
 /* Katalog sahifasi: filtr + kontent */
 .catalog-layout {
     display: grid;
-    grid-template-columns: 260px 1fr;
+    grid-template-columns: 340px 1fr;
     gap: 32px;
     align-items: start;
 }
 
 .filter-panel {
-    background-color: #fff;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    padding: 20px;
+    position: sticky;
+    top: 88px;
 }
 
-.filter-form h3 {
-    font-size: 0.95rem;
-    margin: 18px 0 8px;
+.filter-details {
+    background-color: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+/* Mobil "Filtrlar" ochish tugmasi — desktopda yashiringan */
+.filter-mobile-toggle {
+    display: none;
+}
+
+.filter-form {
+    padding: 26px;
+}
+
+.filter-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.filter-title {
+    font-size: 1.15rem;
+    margin: 0;
     color: var(--color-primary-dark);
 }
 
-.filter-form h3:first-child {
-    margin-top: 0;
+.filter-reset {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    transition: color var(--transition-base);
+}
+
+.filter-reset:hover {
+    color: var(--color-primary);
+}
+
+.filter-group {
+    padding: 18px 0;
+    border-top: 1px solid var(--color-border);
+}
+
+.filter-head + .filter-group {
+    border-top: none;
+}
+
+.filter-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 12px;
 }
 
 .filter-category-list {
@@ -862,43 +957,102 @@ a {
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
 }
 
 .filter-category-list a {
+    display: block;
+    padding: 9px 12px;
+    border-radius: 8px;
     color: var(--color-text);
     font-size: 0.92rem;
+    transition: background-color var(--transition-base), color var(--transition-base);
 }
 
-.filter-category-list a.active,
 .filter-category-list a:hover {
-    color: var(--color-primary);
+    background-color: var(--color-bg-alt);
+    color: var(--color-primary-dark);
+}
+
+.filter-category-list a.active {
+    background-color: var(--color-primary);
+    color: #fff;
     font-weight: 600;
 }
 
 .filter-price-range {
     display: flex;
+    align-items: center;
     gap: 8px;
+}
+
+.filter-price-sep {
+    color: var(--color-muted);
+    flex-shrink: 0;
 }
 
 .filter-price-range input,
 .filter-form select {
     width: 100%;
-    padding: 8px 10px;
+    padding: 11px 12px;
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
-.filter-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 16px;
+.filter-price-range input:focus,
+.filter-form select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.12);
+}
+
+/* Custom select: standart strelka o'rniga SVG */
+.filter-select-wrap {
+    position: relative;
+}
+
+.filter-form select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 38px;
+    cursor: pointer;
+}
+
+.filter-select-wrap::after {
+    content: "";
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    transform: translateY(-60%) rotate(45deg);
+    border-right: 2px solid var(--color-muted);
+    border-bottom: 2px solid var(--color-muted);
+    pointer-events: none;
+}
+
+.filter-group-switch {
+    padding-bottom: 4px;
+}
+
+.filter-switch-row {
+    padding: 0;
+    border-top: none;
     font-size: 0.92rem;
 }
 
 .filter-submit {
-    margin-top: 20px;
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px;
+    font-size: 0.98rem;
 }
 
 .catalog-title {
@@ -2408,6 +2562,51 @@ a.profile-stat:hover {
         grid-template-columns: 1fr;
     }
 
+    .filter-panel {
+        position: static;
+    }
+
+    /* Mobilda "Filtrlar" tugmasi ko'rinadi, panel yig'iladi/ochiladi */
+    .filter-mobile-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 18px;
+        font-weight: 600;
+        color: var(--color-primary-dark);
+        cursor: pointer;
+        list-style: none;
+        user-select: none;
+    }
+
+    .filter-mobile-toggle::-webkit-details-marker {
+        display: none;
+    }
+
+    .filter-mobile-toggle span {
+        margin-right: auto;
+    }
+
+    .filter-toggle-chevron {
+        transition: transform var(--transition-base);
+    }
+
+    .filter-details[open] .filter-toggle-chevron {
+        transform: rotate(180deg);
+    }
+
+    .filter-details[open] .filter-mobile-toggle {
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .filter-head {
+        display: none;
+    }
+
+    .filter-form {
+        padding-top: 6px;
+    }
+
     .product-detail {
         grid-template-columns: 1fr;
     }
@@ -2430,58 +2629,142 @@ a.profile-stat:hover {
 }
 
 @media (max-width: 768px) {
-    .hamburger {
-        display: flex;
+    .header-inner {
+        gap: 14px;
+        padding: 12px 16px;
+    }
+
+    /* Logo chap tomonda, burger menyu o'ng tomonda */
+    .logo {
         order: 1;
     }
 
-    .logo {
+    .hamburger {
+        display: flex;
         order: 2;
+        margin-left: auto;
     }
 
     .search-form {
-        order: 4;
+        order: 3;
         flex-basis: 100%;
         max-width: none;
     }
 
+    /* Menyu — o'ngdan siljib chiquvchi drawer */
     .main-nav {
-        order: 5;
-        display: none;
-        flex-basis: 100%;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(84vw, 330px);
+        margin: 0;
+        padding: 0 0 24px;
+        background-color: #fff;
         flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-        padding-top: 12px;
-        border-top: 1px solid var(--color-border);
-        margin-top: 12px;
+        align-items: stretch;
+        gap: 2px;
+        border: none;
+        box-shadow: -12px 0 40px rgba(43, 32, 20, 0.18);
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 60;
+        overflow-y: auto;
+        overscroll-behavior: contain;
     }
 
     .main-nav.is-open {
+        transform: translateX(0);
+    }
+
+    .nav-drawer-head {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 20px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid var(--color-border);
+        position: sticky;
+        top: 0;
+        background-color: #fff;
+        z-index: 1;
+    }
+
+    .nav-drawer-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--color-primary-dark);
+    }
+
+    .nav-drawer-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border: none;
+        background: none;
+        color: var(--color-muted);
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background-color var(--transition-base), color var(--transition-base);
+    }
+
+    .nav-drawer-close:active {
+        background-color: var(--color-bg-alt);
+        color: var(--color-primary);
     }
 
     .main-nav > a,
     .nav-dropdown-toggle {
         display: block;
         width: 100%;
-        padding: 10px 4px;
+        padding: 14px 20px;
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 0;
     }
 
-    /* Mobil menyuda ikonka havolalari matn bilan ko'rinadi */
+    .main-nav > a:active,
+    .nav-dropdown-toggle:active {
+        background-color: var(--color-bg);
+    }
+
+    /* Sevimli va savat drawer ichida — matn bilan qator, tepada */
     .main-nav > a.nav-icon-link {
+        order: 0;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 14px;
+        color: var(--color-text);
     }
 
-    .nav-icon-text {
+    .main-nav .nav-icon-text {
         display: inline;
     }
 
-    .nav-badge {
+    .main-nav .nav-icon-wrap {
+        width: 24px;
+    }
+
+    .main-nav .nav-badge {
         top: -6px;
-        right: -10px;
+        right: -8px;
+    }
+
+    .nav-profile-link,
+    .nav-login-link {
+        margin-top: 8px;
+        border-top: 1px solid var(--color-border);
+    }
+
+    /* "Boshqaruv" tugmasi drawerda to'liq kenglikdagi pill */
+    .main-nav > a.nav-dashboard {
+        margin: 12px 20px 0;
+        width: auto;
+        text-align: center;
+        border-radius: 999px;
+        padding: 12px 20px;
     }
 
     .nav-dropdown {
@@ -2493,9 +2776,34 @@ a.profile-stat:hover {
         position: static;
         box-shadow: none;
         border: none;
-        margin-top: 4px;
-        padding: 0 0 8px 16px;
+        margin: 0;
+        padding: 0 0 8px 32px;
         min-width: 0;
+    }
+
+    .nav-dropdown-menu a {
+        padding: 10px 12px;
+    }
+
+    /* Drawer orqasidagi qoraytiruvchi qatlam */
+    .nav-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(43, 32, 20, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 55;
+    }
+
+    .nav-overlay.is-open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    body.nav-lock {
+        overflow: hidden;
     }
 }
 
@@ -2779,6 +3087,7 @@ a.profile-stat:hover {
     gap: 8px;
     color: var(--color-text);
     transition: color var(--transition-base);
+    order: 5; /* desktopda menyu o'ng chetida ikonkalar */
 }
 
 .nav-icon-link:hover {

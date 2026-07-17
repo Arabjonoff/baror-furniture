@@ -7,8 +7,10 @@
 <section class="hero-slider" id="heroSlider">
     <div class="hero-slides">
         {% for banner in banners %}
-            <div class="hero-slide {% if banner.image %}has-image{% else %}hero-slide-{% cycle '1' '2' '3' %}{% endif %} {% if banner.title or banner.button_text %}has-content{% endif %} {% if forloop.first %}is-active{% endif %}"
-                 {% if banner.image %}style="background-image:url('{{ banner.image.url }}');"{% endif %}>
+            <div class="hero-slide {% if banner.image %}has-image{% else %}hero-slide-{% cycle '1' '2' '3' %}{% endif %} {% if banner.title or banner.button_text %}has-content{% endif %} {% if forloop.first %}is-active{% endif %}">
+                {% if banner.image %}
+                    <div class="hero-slide-media" style="background-image:url('{{ banner.image.url }}');"></div>
+                {% endif %}
                 {% if banner.title or banner.button_text or banner.eyebrow %}
                 <div class="hero-slide-content">
                     {% if banner.eyebrow %}<span class="hero-eyebrow">{{ banner.eyebrow }}</span>{% endif %}

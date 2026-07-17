@@ -446,14 +446,56 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Mobil hamburger menyu
+    // Mobil hamburger menyu (o'ngdan siljib chiquvchi drawer)
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const mainNav = document.getElementById('mainNav');
+    const navOverlay = document.getElementById('navOverlay');
+    const navCloseBtn = document.getElementById('navCloseBtn');
     if (hamburgerBtn && mainNav) {
+        const openNav = function () {
+            mainNav.classList.add('is-open');
+            hamburgerBtn.classList.add('is-active');
+            hamburgerBtn.setAttribute('aria-expanded', 'true');
+            if (navOverlay) {
+                navOverlay.hidden = false;
+                // reflow, so opacity o'tishi ishlaydi
+                void navOverlay.offsetWidth;
+                navOverlay.classList.add('is-open');
+            }
+            document.body.classList.add('nav-lock');
+        };
+        const closeNav = function () {
+            mainNav.classList.remove('is-open');
+            hamburgerBtn.classList.remove('is-active');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            if (navOverlay) {
+                navOverlay.classList.remove('is-open');
+                setTimeout(function () { navOverlay.hidden = true; }, 300);
+            }
+            document.body.classList.remove('nav-lock');
+        };
+
         hamburgerBtn.addEventListener('click', function () {
-            const isOpen = mainNav.classList.toggle('is-open');
-            hamburgerBtn.classList.toggle('is-active', isOpen);
-            hamburgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            if (mainNav.classList.contains('is-open')) {
+                closeNav();
+            } else {
+                openNav();
+            }
+        });
+
+        if (navCloseBtn) navCloseBtn.addEventListener('click', closeNav);
+        if (navOverlay) navOverlay.addEventListener('click', closeNav);
+
+        // Menyu havolasiga bosilganda drawer yopiladi (dropdown toggle bundan mustasno)
+        mainNav.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (mainNav.classList.contains('is-open')) closeNav();
+            });
+        });
+
+        // Esc bilan yopish
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && mainNav.classList.contains('is-open')) closeNav();
         });
     }
 
