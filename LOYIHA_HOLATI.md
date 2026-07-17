@@ -296,7 +296,7 @@ Django admin'dagi barcha bo'limlar `/boshqaruv/` paneliga to'liq **create/update
 
 **Yangi bo'limlar (barchasida ro'yxat + qo'shish + tahrir + o'chirish):**
 - **Kategoriyalar** (rasm bilan), **Materiallar**, **Xona turlari**, **Bannerlar** (rasm bilan), **Promokodlar** (datetime pickerlar, chegirma turi).
-- **Mahsulotlar** — endi **rasm va rang variantlari** ham dashboardda (inline formsetlar). Ilgari bular Django adminga yo'naltirilardi.
+- **Mahsulotlar** — endi **rasm va rang variantlari** ham dashboardda (inline formsetlar). Ilgari bular Django adminga yo'naltirilardi. **"+ Rasm qo'shish" / "+ Rang qo'shish"** tugmalari `empty_form`ni klonlab `TOTAL_FORMS`ni oshiradi — cheksiz rasm/rang qo'shsa bo'ladi (JS `dashboard/templates/dashboard/product_form.html` ichida).
 - **Mijozlar/Foydalanuvchilar** — to'liq CRUD: yaratish (parol bilan), tahrirlash (avatar, bonus, xodim qilish, parolni ixtiyoriy yangilash) + **manzillar** inline formseti, o'chirish. Mijoz/Xodim tabli filtri.
 - **Buyurtmalar** — mavjud detal/holat yangilashga **o'chirish** + chegirma/promo ko'rsatish qo'shildi.
 - **Sevimlilar** — ko'rish ro'yxati.
