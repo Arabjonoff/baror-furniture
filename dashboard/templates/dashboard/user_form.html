@@ -1,0 +1,76 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_extras %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}{{ title }}{% endblock %}
+{% block subheading %}Foydalanuvchini tahrirlash{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'dashboard:customers' %}" class="db-btn db-btn-sm" style="margin-bottom:18px;">← Mijozlarga qaytish</a>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="db-panel" style="margin-bottom:18px;">
+        <div class="db-panel-head"><h2>Asosiy ma'lumotlar</h2></div>
+        <div class="db-panel-body">
+            <div class="db-form db-form-single">
+                {% if form.non_field_errors %}<div class="db-message error db-field-wide">{{ form.non_field_errors }}</div>{% endif %}
+                {% for field in form %}
+                    {% if field|is_checkbox %}
+                        <div class="db-field db-field-check db-field-wide">
+                            {{ field }}
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        </div>
+                    {% else %}
+                        <div class="db-field db-field-wide">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<span class="db-field-help">{{ field.help_text }}</span>{% endif %}
+                            {% for e in field.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="db-panel" style="margin-bottom:18px;">
+        <div class="db-panel-head"><h2>Manzillar</h2></div>
+        <div class="db-panel-body">
+            {{ address_formset.management_form }}
+            <div class="db-formset">
+                {% for aform in address_formset %}
+                    <div class="db-formset-row">
+                        {% for hidden in aform.hidden_fields %}{{ hidden }}{% endfor %}
+                        <div class="db-form db-form-2col">
+                            {% for field in aform.visible_fields %}
+                                {% if field|is_checkbox %}
+                                    <div class="db-field db-field-check">
+                                        {{ field }}
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    </div>
+                                {% else %}
+                                    <div class="db-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}
+                                        {% for e in field.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <p class="db-field-help">Yangi manzil qo'shish uchun bo'sh qatorni to'ldiring. O'chirish uchun "O'chirish" belgisini tanlang.</p>
+        </div>
+    </div>
+
+    <div class="db-form-actions" style="display:flex;gap:10px;">
+        <button type="submit" class="db-btn db-btn-primary">Saqlash</button>
+        <a href="{% url 'dashboard:customers' %}" class="db-btn">Bekor qilish</a>
+    </div>
+</form>
+
+{% endblock %}

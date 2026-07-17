@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+{% load dashboard_extras %}
 
 {% block title %}{{ title }}{% endblock %}
 {% block heading %}{{ title }}{% endblock %}
@@ -8,90 +9,154 @@
 
 <a href="{% url 'dashboard:products' %}" class="db-btn db-btn-sm" style="margin-bottom:18px;">← Mahsulotlarga qaytish</a>
 
-<div class="db-panel">
-    <div class="db-panel-body">
-        <form method="post" class="db-form">
-            {% csrf_token %}
+<form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
 
-            {% if form.non_field_errors %}<div class="db-message error db-field-wide">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="db-panel" style="margin-bottom:18px;">
+        <div class="db-panel-head"><h2>Asosiy ma'lumotlar</h2></div>
+        <div class="db-panel-body">
+            <div class="db-form">
+                {% if form.non_field_errors %}<div class="db-message error db-field-wide">{{ form.non_field_errors }}</div>{% endif %}
 
-            <div class="db-field db-field-wide">
-                <label for="{{ form.name.id_for_label }}">Nomi</label>
-                {{ form.name }}
-                {% for e in form.name.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
-            </div>
+                <div class="db-field db-field-wide">
+                    <label for="{{ form.name.id_for_label }}">Nomi</label>
+                    {{ form.name }}
+                    {% for e in form.name.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
+                </div>
 
-            <div class="db-field">
-                <label for="{{ form.category.id_for_label }}">Kategoriya</label>
-                {{ form.category }}
-                {% for e in form.category.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
-            </div>
-            <div class="db-field">
-                <label for="{{ form.price.id_for_label }}">Narx (so'm)</label>
-                {{ form.price }}
-                {% for e in form.price.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
-            </div>
+                <div class="db-field">
+                    <label for="{{ form.category.id_for_label }}">Kategoriya</label>
+                    {{ form.category }}
+                    {% for e in form.category.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
+                </div>
+                <div class="db-field">
+                    <label for="{{ form.price.id_for_label }}">Narx (so'm)</label>
+                    {{ form.price }}
+                    {% for e in form.price.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
+                </div>
 
-            <div class="db-field">
-                <label for="{{ form.old_price.id_for_label }}">Chegirmagacha narx</label>
-                {{ form.old_price }}
-            </div>
-            <div class="db-field">
-                <label for="{{ form.stock.id_for_label }}">Ombordagi qoldiq</label>
-                {{ form.stock }}
-            </div>
+                <div class="db-field">
+                    <label for="{{ form.old_price.id_for_label }}">Chegirmagacha narx</label>
+                    {{ form.old_price }}
+                </div>
+                <div class="db-field">
+                    <label for="{{ form.stock.id_for_label }}">Ombordagi qoldiq</label>
+                    {{ form.stock }}
+                </div>
 
-            <div class="db-field">
-                <label for="{{ form.material.id_for_label }}">Material</label>
-                {{ form.material }}
-            </div>
-            <div class="db-field">
-                <label for="{{ form.room_type.id_for_label }}">Xona turi</label>
-                {{ form.room_type }}
-            </div>
+                <div class="db-field">
+                    <label for="{{ form.material.id_for_label }}">Material</label>
+                    {{ form.material }}
+                </div>
+                <div class="db-field">
+                    <label for="{{ form.room_type.id_for_label }}">Xona turi</label>
+                    {{ form.room_type }}
+                </div>
 
-            <div class="db-field">
-                <label for="{{ form.width.id_for_label }}">Kengligi (sm)</label>
-                {{ form.width }}
-            </div>
-            <div class="db-field">
-                <label for="{{ form.height.id_for_label }}">Balandligi (sm)</label>
-                {{ form.height }}
-            </div>
-            <div class="db-field">
-                <label for="{{ form.depth.id_for_label }}">Chuqurligi (sm)</label>
-                {{ form.depth }}
-            </div>
-            <div class="db-field">
-                <label for="{{ form.weight.id_for_label }}">Og'irligi (kg)</label>
-                {{ form.weight }}
-            </div>
+                <div class="db-field">
+                    <label for="{{ form.width.id_for_label }}">Kengligi (sm)</label>
+                    {{ form.width }}
+                </div>
+                <div class="db-field">
+                    <label for="{{ form.height.id_for_label }}">Balandligi (sm)</label>
+                    {{ form.height }}
+                </div>
+                <div class="db-field">
+                    <label for="{{ form.depth.id_for_label }}">Chuqurligi (sm)</label>
+                    {{ form.depth }}
+                </div>
+                <div class="db-field">
+                    <label for="{{ form.weight.id_for_label }}">Og'irligi (kg)</label>
+                    {{ form.weight }}
+                </div>
 
-            <div class="db-field db-field-wide">
-                <label for="{{ form.description.id_for_label }}">Tavsif</label>
-                {{ form.description }}
-            </div>
+                <div class="db-field db-field-wide">
+                    <label for="{{ form.description.id_for_label }}">Tavsif</label>
+                    {{ form.description }}
+                </div>
 
-            <div class="db-field db-field-check">
-                {{ form.is_available }}
-                <label for="{{ form.is_available.id_for_label }}">Sotuvda ko'rsatilsin</label>
+                <div class="db-field db-field-check">
+                    {{ form.is_available }}
+                    <label for="{{ form.is_available.id_for_label }}">Sotuvda ko'rsatilsin</label>
+                </div>
+                <div class="db-field db-field-check">
+                    {{ form.is_featured }}
+                    <label for="{{ form.is_featured.id_for_label }}">Bosh sahifada ko'rsatilsin</label>
+                </div>
             </div>
-            <div class="db-field db-field-check">
-                {{ form.is_featured }}
-                <label for="{{ form.is_featured.id_for_label }}">Bosh sahifada ko'rsatilsin</label>
-            </div>
-
-            <div class="db-form-actions">
-                <button type="submit" class="db-btn db-btn-primary">Saqlash</button>
-                <a href="{% url 'dashboard:products' %}" class="db-btn">Bekor qilish</a>
-            </div>
-        </form>
-        {% if product %}
-        <p class="db-cell-muted" style="margin-top:16px;">
-            💡 Rasmlar, ranglar va slug'ni <a href="/admin/catalog/product/{{ product.id }}/change/" style="color:var(--db-primary);">Django admin</a> orqali qo'shishingiz mumkin.
-        </p>
-        {% endif %}
+        </div>
     </div>
-</div>
+
+    {# Rasmlar #}
+    <div class="db-panel" style="margin-bottom:18px;">
+        <div class="db-panel-head"><h2>Rasmlar</h2></div>
+        <div class="db-panel-body">
+            {{ image_formset.management_form }}
+            {% if image_formset.non_form_errors %}<div class="db-message error">{{ image_formset.non_form_errors }}</div>{% endif %}
+            <div class="db-formset db-formset-grid">
+                {% for iform in image_formset %}
+                    <div class="db-formset-card">
+                        {% for hidden in iform.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% if iform.instance.pk and iform.instance.image %}
+                            <img class="db-formset-preview" src="{{ iform.instance.image.url }}" alt="">
+                        {% endif %}
+                        {% for e in iform.image.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
+                        <div class="db-field">
+                            <label>Rasm</label>
+                            {{ iform.image }}
+                        </div>
+                        <div class="db-formset-inline">
+                            <label class="db-field-check">{{ iform.is_main }} <span>Asosiy</span></label>
+                            <div class="db-field db-field-order">
+                                <label>Tartib</label>
+                                {{ iform.order }}
+                            </div>
+                        </div>
+                        {% if iform.instance.pk %}
+                            <label class="db-field-check db-formset-del">{{ iform.DELETE }} <span>O'chirish</span></label>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {# Ranglar #}
+    <div class="db-panel" style="margin-bottom:18px;">
+        <div class="db-panel-head"><h2>Rang variantlari</h2></div>
+        <div class="db-panel-body">
+            {{ color_formset.management_form }}
+            {% if color_formset.non_form_errors %}<div class="db-message error">{{ color_formset.non_form_errors }}</div>{% endif %}
+            <div class="db-formset db-formset-grid">
+                {% for cform in color_formset %}
+                    <div class="db-formset-card">
+                        {% for hidden in cform.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% if cform.errors %}<div class="db-form-error">{{ cform.errors }}</div>{% endif %}
+                        <div class="db-field">
+                            <label>Rang nomi</label>
+                            {{ cform.color_name }}
+                        </div>
+                        <div class="db-field">
+                            <label>Rang (HEX)</label>
+                            {{ cform.color_hex }}
+                        </div>
+                        <div class="db-field">
+                            <label>Rasm (ixtiyoriy)</label>
+                            {{ cform.image }}
+                        </div>
+                        {% if cform.instance.pk %}
+                            <label class="db-field-check db-formset-del">{{ cform.DELETE }} <span>O'chirish</span></label>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="db-form-actions" style="display:flex;gap:10px;">
+        <button type="submit" class="db-btn db-btn-primary">Saqlash</button>
+        <a href="{% url 'dashboard:products' %}" class="db-btn">Bekor qilish</a>
+    </div>
+</form>
 
 {% endblock %}

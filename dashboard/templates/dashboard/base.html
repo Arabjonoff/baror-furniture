@@ -20,15 +20,39 @@
             <a href="{% url 'dashboard:index' %}" class="db-nav-item {% if active == 'index' %}active{% endif %}">
                 <span class="ico">📊</span> Statistika
             </a>
+
+            <span class="db-nav-label">Sotuv</span>
             <a href="{% url 'dashboard:orders' %}" class="db-nav-item {% if active == 'orders' %}active{% endif %}">
                 <span class="ico">🧾</span> Buyurtmalar
                 {% if new_orders_count %}<span class="badge">{{ new_orders_count }}</span>{% endif %}
             </a>
+            <a href="{% url 'dashboard:promocodes' %}" class="db-nav-item {% if active == 'promocodes' %}active{% endif %}">
+                <span class="ico">🏷️</span> Promokodlar
+            </a>
+
+            <span class="db-nav-label">Katalog</span>
             <a href="{% url 'dashboard:products' %}" class="db-nav-item {% if active == 'products' %}active{% endif %}">
                 <span class="ico">🛋️</span> Mahsulotlar
             </a>
+            <a href="{% url 'dashboard:categories' %}" class="db-nav-item {% if active == 'categories' %}active{% endif %}">
+                <span class="ico">🗂️</span> Kategoriyalar
+            </a>
+            <a href="{% url 'dashboard:materials' %}" class="db-nav-item {% if active == 'materials' %}active{% endif %}">
+                <span class="ico">🪵</span> Materiallar
+            </a>
+            <a href="{% url 'dashboard:roomtypes' %}" class="db-nav-item {% if active == 'roomtypes' %}active{% endif %}">
+                <span class="ico">🚪</span> Xona turlari
+            </a>
+            <a href="{% url 'dashboard:banners' %}" class="db-nav-item {% if active == 'banners' %}active{% endif %}">
+                <span class="ico">🖼️</span> Bannerlar
+            </a>
+
+            <span class="db-nav-label">Odamlar</span>
             <a href="{% url 'dashboard:customers' %}" class="db-nav-item {% if active == 'customers' %}active{% endif %}">
                 <span class="ico">👥</span> Mijozlar
+            </a>
+            <a href="{% url 'dashboard:wishlist' %}" class="db-nav-item {% if active == 'wishlist' %}active{% endif %}">
+                <span class="ico">❤️</span> Sevimlilar
             </a>
 
             <span class="db-nav-label">Boshqa</span>

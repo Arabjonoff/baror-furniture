@@ -1,0 +1,46 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_extras %}
+
+{% block title %}{{ form_title }}{% endblock %}
+{% block heading %}{{ form_title }}{% endblock %}
+{% block subheading %}{{ form_subtitle }}{% endblock %}
+
+{% block content %}
+
+<a href="{% url list_url %}" class="db-btn db-btn-sm" style="margin-bottom:18px;">← Orqaga</a>
+
+<div class="db-panel">
+    <div class="db-panel-body">
+        <form method="post" enctype="multipart/form-data" class="db-form db-form-single" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="db-message error db-field-wide">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            {% for field in form %}
+                {% if field|is_checkbox %}
+                    <div class="db-field db-field-check db-field-wide">
+                        {{ field }}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% for e in field.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
+                    </div>
+                {% else %}
+                    <div class="db-field db-field-wide">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<span class="db-field-help">{{ field.help_text }}</span>{% endif %}
+                        {% for e in field.errors %}<span class="db-form-error">{{ e }}</span>{% endfor %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <div class="db-form-actions">
+                <button type="submit" class="db-btn db-btn-primary">Saqlash</button>
+                <a href="{% url list_url %}" class="db-btn">Bekor qilish</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

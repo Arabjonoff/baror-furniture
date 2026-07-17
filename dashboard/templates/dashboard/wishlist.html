@@ -1,0 +1,33 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Sevimlilar{% endblock %}
+{% block heading %}Sevimlilar{% endblock %}
+{% block subheading %}Foydalanuvchilar yoqtirgan mahsulotlar{% endblock %}
+
+{% block content %}
+
+<div class="db-panel">
+    <div class="db-table-wrap">
+        <table class="db-table">
+            <thead>
+                <tr><th>Mahsulot</th><th>Foydalanuvchi</th><th>Qo'shilgan sana</th></tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td><div class="prod-cell">
+                            {% with img=item.product.images.first %}<img class="prod-thumb" src="{% if img %}{{ img.image.url }}{% endif %}" alt="">{% endwith %}
+                            <span class="db-cell-strong">{{ item.product.name|truncatechars:40 }}</span>
+                        </div></td>
+                        <td class="db-cell-muted">{{ item.user.get_short_name }}</td>
+                        <td class="db-cell-muted">{{ item.created_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3"><div class="db-empty"><div class="db-empty-icon">❤️</div><p>Hozircha sevimlilar yo'q</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

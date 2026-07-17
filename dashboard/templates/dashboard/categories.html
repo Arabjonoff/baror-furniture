@@ -1,0 +1,50 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Kategoriyalar{% endblock %}
+{% block heading %}Kategoriyalar{% endblock %}
+{% block subheading %}Mahsulot turkumlari{% endblock %}
+
+{% block content %}
+
+<div class="db-toolbar">
+    <div style="flex:1;"></div>
+    <a href="{% url 'dashboard:category_create' %}" class="db-btn db-btn-primary">+ Yangi kategoriya</a>
+</div>
+
+<div class="db-panel">
+    <div class="db-table-wrap">
+        <table class="db-table">
+            <thead>
+                <tr><th>Rasm</th><th>Nomi</th><th>Ota-kategoriya</th><th>Mahsulotlar</th><th>Holat</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                    <tr>
+                        <td>
+                            {% if cat.image %}
+                                <img class="prod-thumb" src="{{ cat.image.url }}" alt="">
+                            {% else %}
+                                <span class="db-thumb-empty">🗂️</span>
+                            {% endif %}
+                        </td>
+                        <td class="db-cell-strong">{{ cat.name }}</td>
+                        <td class="db-cell-muted">{{ cat.parent.name|default:"—" }}</td>
+                        <td class="db-cell-muted">{{ cat.pcount }} ta</td>
+                        <td>{% if cat.is_active %}<span class="db-badge st-yetkazildi">Faol</span>{% else %}<span class="db-badge st-bekor_qilingan">Nofaol</span>{% endif %}</td>
+                        <td style="text-align:right;white-space:nowrap;">
+                            <a href="{% url 'dashboard:category_edit' pk=cat.id %}" class="db-btn db-btn-sm">Tahrir</a>
+                            <form action="{% url 'dashboard:category_delete' pk=cat.id %}" method="post" style="display:inline;" onsubmit="return confirm('“{{ cat.name|escapejs }}” o‘chirilsinmi?');">
+                                {% csrf_token %}
+                                <button type="submit" class="db-btn db-btn-sm db-btn-danger">O'chir</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6"><div class="db-empty"><div class="db-empty-icon">🗂️</div><p>Kategoriya yo'q</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

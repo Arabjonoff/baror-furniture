@@ -1,0 +1,52 @@
+{% extends "dashboard/base.html" %}
+{% load catalog_extras %}
+
+{% block title %}Promokodlar{% endblock %}
+{% block heading %}Promokodlar{% endblock %}
+{% block subheading %}Chegirma kodlari{% endblock %}
+
+{% block content %}
+
+<div class="db-toolbar">
+    <div style="flex:1;"></div>
+    <a href="{% url 'dashboard:promocode_create' %}" class="db-btn db-btn-primary">+ Yangi promokod</a>
+</div>
+
+<div class="db-panel">
+    <div class="db-table-wrap">
+        <table class="db-table">
+            <thead>
+                <tr><th>Kod</th><th>Chegirma</th><th>Min. buyurtma</th><th>Foydalanildi</th><th>Amal muddati</th><th>Holat</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for p in promocodes %}
+                    <tr>
+                        <td class="db-cell-strong">{{ p.code }}</td>
+                        <td>
+                            {% if p.discount_type == 'foiz' %}
+                                {{ p.discount_value|floatformat:0 }}%
+                            {% else %}
+                                {{ p.discount_value|money }} so'm
+                            {% endif %}
+                        </td>
+                        <td class="db-cell-muted">{{ p.min_order_amount|money }} so'm</td>
+                        <td class="db-cell-muted">{{ p.used_count }}{% if p.usage_limit %} / {{ p.usage_limit }}{% endif %}</td>
+                        <td class="db-cell-muted">{% if p.valid_until %}{{ p.valid_until|date:"d.m.Y" }} gacha{% else %}—{% endif %}</td>
+                        <td>{% if p.is_active %}<span class="db-badge st-yetkazildi">Faol</span>{% else %}<span class="db-badge st-bekor_qilingan">Nofaol</span>{% endif %}</td>
+                        <td style="text-align:right;white-space:nowrap;">
+                            <a href="{% url 'dashboard:promocode_edit' pk=p.id %}" class="db-btn db-btn-sm">Tahrir</a>
+                            <form action="{% url 'dashboard:promocode_delete' pk=p.id %}" method="post" style="display:inline;" onsubmit="return confirm('“{{ p.code|escapejs }}” o‘chirilsinmi?');">
+                                {% csrf_token %}
+                                <button type="submit" class="db-btn db-btn-sm db-btn-danger">O'chir</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7"><div class="db-empty"><div class="db-empty-icon">🏷️</div><p>Promokod yo'q</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

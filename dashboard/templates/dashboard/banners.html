@@ -1,0 +1,52 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Bannerlar{% endblock %}
+{% block heading %}Bannerlar{% endblock %}
+{% block subheading %}Bosh sahifa slayderi{% endblock %}
+
+{% block content %}
+
+<div class="db-toolbar">
+    <div style="flex:1;"></div>
+    <a href="{% url 'dashboard:banner_create' %}" class="db-btn db-btn-primary">+ Yangi banner</a>
+</div>
+
+<div class="db-panel">
+    <div class="db-table-wrap">
+        <table class="db-table">
+            <thead>
+                <tr><th>Rasm</th><th>Sarlavha</th><th>Tartib</th><th>Holat</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for b in banners %}
+                    <tr>
+                        <td>
+                            {% if b.image %}
+                                <img class="db-thumb-wide" src="{{ b.image.url }}" alt="">
+                            {% else %}
+                                <span class="db-thumb-empty">🖼️</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="db-cell-strong">{{ b.title }}</div>
+                            {% if b.eyebrow %}<div class="db-cell-muted">{{ b.eyebrow }}</div>{% endif %}
+                        </td>
+                        <td class="db-cell-muted">{{ b.order }}</td>
+                        <td>{% if b.is_active %}<span class="db-badge st-yetkazildi">Faol</span>{% else %}<span class="db-badge st-bekor_qilingan">Nofaol</span>{% endif %}</td>
+                        <td style="text-align:right;white-space:nowrap;">
+                            <a href="{% url 'dashboard:banner_edit' pk=b.id %}" class="db-btn db-btn-sm">Tahrir</a>
+                            <form action="{% url 'dashboard:banner_delete' pk=b.id %}" method="post" style="display:inline;" onsubmit="return confirm('“{{ b.title|escapejs }}” o‘chirilsinmi?');">
+                                {% csrf_token %}
+                                <button type="submit" class="db-btn db-btn-sm db-btn-danger">O'chir</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5"><div class="db-empty"><div class="db-empty-icon">🖼️</div><p>Banner yo'q</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

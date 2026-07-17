@@ -1,0 +1,41 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Xona turlari{% endblock %}
+{% block heading %}Xona turlari{% endblock %}
+{% block subheading %}Mahsulot xona turlari{% endblock %}
+
+{% block content %}
+
+<div class="db-toolbar">
+    <div style="flex:1;"></div>
+    <a href="{% url 'dashboard:roomtype_create' %}" class="db-btn db-btn-primary">+ Yangi xona turi</a>
+</div>
+
+<div class="db-panel">
+    <div class="db-table-wrap">
+        <table class="db-table">
+            <thead>
+                <tr><th>Nomi</th><th>Mahsulotlar</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for rt in room_types %}
+                    <tr>
+                        <td class="db-cell-strong">{{ rt.name }}</td>
+                        <td class="db-cell-muted">{{ rt.pcount }} ta</td>
+                        <td style="text-align:right;white-space:nowrap;">
+                            <a href="{% url 'dashboard:roomtype_edit' pk=rt.id %}" class="db-btn db-btn-sm">Tahrir</a>
+                            <form action="{% url 'dashboard:roomtype_delete' pk=rt.id %}" method="post" style="display:inline;" onsubmit="return confirm('“{{ rt.name|escapejs }}” o‘chirilsinmi?');">
+                                {% csrf_token %}
+                                <button type="submit" class="db-btn db-btn-sm db-btn-danger">O'chir</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3"><div class="db-empty"><div class="db-empty-icon">🚪</div><p>Xona turi yo'q</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

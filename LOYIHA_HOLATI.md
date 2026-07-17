@@ -290,6 +290,27 @@ Uchta bo'lim mobil va umumiy UX bo'yicha zamonaviylashtirildi (faqat template + 
 
 > **CSS saboqlar (Bosqich 29):** (a) `.filter-select-wrap::after` + `appearance:none` — brauzer standart select strelkasini SVG chevron bilan almashtirish. (b) Mobil drawer uchun `.main-nav`ni `position:fixed; transform:translateX(100%)` qilib, `.is-open`da `translateX(0)`; overlay alohida `hidden` + `.is-open` bilan boshqariladi. (c) Banner rasm/matn ajralishi uchun rasm alohida qatlam bo'lishi kerak — background'da bo'lsa mobilda stacked/overlay'ni moslash oson.
 
+### Bosqich 30 — Django admin bo'limlari maxsus dashboardga to'liq ko'chirildi (CRUD) ✅
+
+Django admin'dagi barcha bo'limlar `/boshqaruv/` paneliga to'liq **create/update/delete** bilan ko'chirildi. Endi do'kon egasi Django admin'siz ham hamma narsani boshqaradi.
+
+**Yangi bo'limlar (barchasida ro'yxat + qo'shish + tahrir + o'chirish):**
+- **Kategoriyalar** (rasm bilan), **Materiallar**, **Xona turlari**, **Bannerlar** (rasm bilan), **Promokodlar** (datetime pickerlar, chegirma turi).
+- **Mahsulotlar** — endi **rasm va rang variantlari** ham dashboardda (inline formsetlar). Ilgari bular Django adminga yo'naltirilardi.
+- **Mijozlar/Foydalanuvchilar** — to'liq CRUD: yaratish (parol bilan), tahrirlash (avatar, bonus, xodim qilish, parolni ixtiyoriy yangilash) + **manzillar** inline formseti, o'chirish. Mijoz/Xodim tabli filtri.
+- **Buyurtmalar** — mavjud detal/holat yangilashga **o'chirish** + chegirma/promo ko'rsatish qo'shildi.
+- **Sevimlilar** — ko'rish ro'yxati.
+
+**Arxitektura:**
+- `dashboard/forms.py` — barcha ModelForm'lar + inline formsetlar (`ProductImageFormSet`, `ProductColorFormSet`, `AddressFormSet`).
+- `dashboard/views.py` — umumiy `_form_view()` / `_delete_view()` yordamchilari bilan DRY CRUD; `ProtectedError` ushlab olinadi (buyurtmaga bog'langan mahsulot/kategoriya o'chmaydi, xato xabari beriladi).
+- `dashboard/templatetags/dashboard_extras.py` — `widget_type`/`is_checkbox`/`is_wide` filtrlari (umumiy forma shabloni maydonlarni avtomatik render qiladi).
+- Shablonlar: `generic_form.html` (oddiy modellar), per-model ro'yxatlar, `user_form.html`, kengaytirilgan `product_form.html`.
+- Sidebar **guruhlandi**: Asosiy / Sotuv / Katalog / Odamlar / Boshqa. `dashboard.css` ga formset kartalari, eskizlar, bir/ikki ustunli forma uslublari qo'shildi.
+- Eski `catalog/forms_dashboard.py` o'chirildi (o'rnini `dashboard/forms.py` egalladi).
+
+> **Muhim saboq (formset + `type=color`):** rang tanlagich (`<input type="color">`) doim `#000000` yuboradi, shuning uchun bo'sh (extra) rang qatori "o'zgargan" deb hisoblanib, `color_name` majburiy qilib validatsiyani bloklardi. Yechim: `ProductColorForm`da `color_hex.initial='#000000'` — endi tegilmagan bo'sh qator `has_changed()=False` bo'lib o'tkazib yuboriladi. Formset xatolari shablonda ham ko'rsatiladi (avval sukut bilan bloklanardi).
+
 ## Test/kirish ma'lumotlari
 
 - **🌐 Jonli sayt (production):** https://barormebel.uz · Dashboard: https://barormebel.uz/boshqaruv/ · Admin: https://barormebel.uz/admin/

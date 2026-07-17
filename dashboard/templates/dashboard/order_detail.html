@@ -7,7 +7,13 @@
 
 {% block content %}
 
-<a href="{% url 'dashboard:orders' %}" class="db-btn db-btn-sm" style="margin-bottom:18px;">← Buyurtmalarga qaytish</a>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+    <a href="{% url 'dashboard:orders' %}" class="db-btn db-btn-sm">← Buyurtmalarga qaytish</a>
+    <form action="{% url 'dashboard:order_delete' order_id=order.id %}" method="post" onsubmit="return confirm('Buyurtma #{{ order.id }} butunlay o‘chirilsinmi?');">
+        {% csrf_token %}
+        <button type="submit" class="db-btn db-btn-sm db-btn-danger">Buyurtmani o'chirish</button>
+    </form>
+</div>
 
 <div class="db-detail-grid">
     <!-- Buyurtma mahsulotlari -->
@@ -33,6 +39,10 @@
             </table>
         </div>
         <div class="db-panel-body">
+            {% if order.discount %}
+                <div class="db-info-row"><span class="k">Oraliq summa</span><span class="v">{{ order.subtotal|money }} so'm</span></div>
+                <div class="db-info-row"><span class="k">Chegirma{% if order.promo_code %} ({{ order.promo_code }}){% endif %}</span><span class="v">−{{ order.discount|money }} so'm</span></div>
+            {% endif %}
             <div class="db-total-row"><span>Jami summa</span><span>{{ order.total_price|money }} so'm</span></div>
         </div>
     </div>

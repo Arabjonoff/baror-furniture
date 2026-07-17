@@ -49,6 +49,7 @@ a { color: inherit; text-decoration: none; }
     position: sticky;
     top: 0;
     height: 100vh;
+    overflow-y: auto;
 }
 
 .db-brand {
@@ -308,6 +309,37 @@ a { color: inherit; text-decoration: none; }
 .db-field-check label { color: var(--db-text); font-weight: 500; }
 .db-form-error { color: var(--db-red); font-size: 0.8rem; }
 .db-form-actions { grid-column: 1 / -1; display: flex; gap: 10px; margin-top: 6px; }
+.db-field-help { font-size: 0.78rem; color: var(--db-muted); }
+
+/* Bir ustunli / ikki ustunli forma variantlari */
+.db-form-single { grid-template-columns: 1fr; max-width: 640px; }
+.db-form-2col { grid-template-columns: 1fr 1fr; }
+.db-form input[type="file"] { padding: 8px; background: var(--db-bg); }
+.db-form input[type="color"] { padding: 4px; height: 42px; cursor: pointer; }
+
+/* Inline formsetlar (rasm, rang, manzil) */
+.db-formset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.db-formset-card {
+    border: 1px solid var(--db-border); border-radius: 12px; padding: 14px;
+    display: flex; flex-direction: column; gap: 10px; background: var(--db-surface);
+}
+.db-formset-preview { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; }
+.db-formset-inline { display: flex; align-items: flex-end; gap: 14px; }
+.db-formset-inline .db-field-check { align-items: center; }
+.db-field-order { width: 90px; }
+.db-formset-del { color: var(--db-red); font-weight: 600; }
+.db-formset-del span { color: var(--db-red); }
+
+/* Manzil formseti — qatorlar */
+.db-formset-row { padding: 14px 0; border-bottom: 1px dashed var(--db-border); }
+.db-formset-row:last-child { border-bottom: none; }
+
+/* Jadval eskizlari */
+.db-thumb-empty {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 46px; height: 46px; border-radius: 8px; background: var(--db-bg); font-size: 1.2rem;
+}
+.db-thumb-wide { width: 90px; height: 44px; object-fit: cover; border-radius: 6px; }
 
 /* Detail layout */
 .db-detail-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items: start; }
@@ -339,7 +371,7 @@ a { color: inherit; text-decoration: none; }
     }
     .db-sidebar.open { transform: translateX(0); }
     .db-hamburger { display: block; }
-    .db-form { grid-template-columns: 1fr; }
+    .db-form, .db-form-2col { grid-template-columns: 1fr; }
     .db-content { padding: 18px; }
     .db-topbar { padding: 14px 18px; }
 }
