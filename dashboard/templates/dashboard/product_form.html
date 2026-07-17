@@ -93,7 +93,7 @@
         <div class="db-panel-body">
             {{ image_formset.management_form }}
             {% if image_formset.non_form_errors %}<div class="db-message error">{{ image_formset.non_form_errors }}</div>{% endif %}
-            <div class="db-formset db-formset-grid">
+            <div class="db-formset db-formset-grid" id="images-formset">
                 {% for iform in image_formset %}
                     <div class="db-formset-card">
                         {% for hidden in iform.hidden_fields %}{{ hidden }}{% endfor %}
@@ -118,6 +118,23 @@
                     </div>
                 {% endfor %}
             </div>
+            <template id="images-empty">
+                <div class="db-formset-card">
+                    {% for hidden in image_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="db-field">
+                        <label>Rasm</label>
+                        {{ image_formset.empty_form.image }}
+                    </div>
+                    <div class="db-formset-inline">
+                        <label class="db-field-check">{{ image_formset.empty_form.is_main }} <span>Asosiy</span></label>
+                        <div class="db-field db-field-order">
+                            <label>Tartib</label>
+                            {{ image_formset.empty_form.order }}
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <button type="button" class="db-btn db-btn-sm" data-add="images" style="margin-top:14px;">+ Rasm qo'shish</button>
         </div>
     </div>
 
@@ -127,7 +144,7 @@
         <div class="db-panel-body">
             {{ color_formset.management_form }}
             {% if color_formset.non_form_errors %}<div class="db-message error">{{ color_formset.non_form_errors }}</div>{% endif %}
-            <div class="db-formset db-formset-grid">
+            <div class="db-formset db-formset-grid" id="colors-formset">
                 {% for cform in color_formset %}
                     <div class="db-formset-card">
                         {% for hidden in cform.hidden_fields %}{{ hidden }}{% endfor %}
@@ -150,6 +167,24 @@
                     </div>
                 {% endfor %}
             </div>
+            <template id="colors-empty">
+                <div class="db-formset-card">
+                    {% for hidden in color_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="db-field">
+                        <label>Rang nomi</label>
+                        {{ color_formset.empty_form.color_name }}
+                    </div>
+                    <div class="db-field">
+                        <label>Rang (HEX)</label>
+                        {{ color_formset.empty_form.color_hex }}
+                    </div>
+                    <div class="db-field">
+                        <label>Rasm (ixtiyoriy)</label>
+                        {{ color_formset.empty_form.image }}
+                    </div>
+                </div>
+            </template>
+            <button type="button" class="db-btn db-btn-sm" data-add="colors" style="margin-top:14px;">+ Rang qo'shish</button>
         </div>
     </div>
 
@@ -159,4 +194,23 @@
     </div>
 </form>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Formsetga yangi qator qo'shish (rasm / rang) — cheksiz qo'shish mumkin
+    document.querySelectorAll('[data-add]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var name = btn.dataset.add;                       // 'images' yoki 'colors'
+            var container = document.getElementById(name + '-formset');
+            var tmpl = document.getElementById(name + '-empty').innerHTML;
+            var total = document.getElementById('id_' + name + '-TOTAL_FORMS');
+            var index = parseInt(total.value, 10);
+            var wrap = document.createElement('div');
+            wrap.innerHTML = tmpl.replace(/__prefix__/g, index).trim();
+            container.appendChild(wrap.firstElementChild);
+            total.value = index + 1;
+        });
+    });
+</script>
 {% endblock %}
